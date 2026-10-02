@@ -79,9 +79,11 @@ Details such as shared implementation with `resources/list`, equivalence to spec
 
 ### Resources remain the object model
 
-Discovery tools help the model find and understand resources; they do not replace the resources themselves.
+Discovery and fallback tools do not replace the Resources themselves.
 
-The server therefore does not introduce a parallel `read_unit` tool at this stage. Reading a unit remains a resource operation. Tool duplication should only be introduced later if a concrete harness or model requirement demonstrates that it is necessary.
+Resources remain the canonical object representation. Model-facing read tools may be exposed as a semantic fallback for harnesses that do not make MCP Resource operations directly available to the model, as defined in ADR 0011.
+
+These tools must resolve through the same unit model and must not create an independent representation of unit state or definitions.
 
 ## General design principle
 
@@ -90,11 +92,11 @@ For resource-oriented MCP servers:
 1. use Resources to model domain objects and their semantic representations;
 2. keep generic Resource descriptions focused on the abstraction, not on the current set of concrete variants;
 3. identify information the model needs in order to navigate or understand that resource model;
-4. when that information is not predictably available to the model, expose a small model-controlled discovery or introspection Tool;
+4. when that information is not predictably available to the model, expose a small model-controlled discovery or semantic fallback Tool;
 5. keep variant/type metadata in a dedicated self-description mechanism when the set is expected to evolve;
 6. share underlying logic between client-facing resource discovery and model-facing tool discovery;
 7. write tool names and descriptions for model decision-making rather than developer documentation;
-8. avoid duplicating resource read or mutation semantics as tools without a demonstrated need;
+8. avoid generic protocol-mirroring tools when a domain-specific semantic tool can provide a smaller interface;
 9. prefer self-describing interfaces over hidden assumptions in agent prompts.
 
 ## Consequences
@@ -107,5 +109,5 @@ For resource-oriented MCP servers:
 - The manager scope is expressed without a separate model-facing `scope` parameter.
 - Clients can continue to use native MCP resource discovery independently of the model.
 - Resource and tool views share the same catalog abstraction.
-- The MCP interface becomes more portable across harnesses with different resource-injection behavior.
+- Deployments can avoid duplicate model-facing access paths when the harness already exposes Resources.
 - The pattern can be reused when designing other resource-oriented MCP servers.
