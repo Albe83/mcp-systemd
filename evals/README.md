@@ -22,9 +22,11 @@ The expected trace is intentionally not always unique. A case can define:
 
 Semantic interactions are intentionally harness-agnostic:
 
-- `kind: unit_discovery` means the model must cause discovery of the relevant unit Resources. This may be realized through `list_units`, native `resources/list`, or an equivalent harness projection.
+- `kind: unit_discovery` means the model must cause discovery of the relevant unit Resources. It always declares `scope: system|user`; user scope also declares `user`. This may be realized through `list_units`, native `resources/list` plus filtering, or an equivalent harness projection.
 - `kind: resource` means the model must cause that Resource view to be read. This may be realized through native MCP Resource access or through mcp-systemd semantic fallback tools such as `read_unit` and `read_unit_definition`.
 - `kind: tool` is used only when the specific tool choice itself is part of the semantic expectation.
+
+The explicit discovery scope belongs to the eval abstraction, not necessarily to the model-facing tool schema. For example, `scope: system` maps to `list_units` with no `user` argument.
 
 ## Rating
 
@@ -69,10 +71,19 @@ A concrete tool expectation:
   name: list_unit_types
 ```
 
-Semantic unit discovery:
+System-manager discovery:
 
 ```yaml
 - kind: unit_discovery
+  scope: system
+  type: service
+```
+
+User-manager discovery:
+
+```yaml
+- kind: unit_discovery
+  scope: user
   type: service
   user: testuser
 ```
