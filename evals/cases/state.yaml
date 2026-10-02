@@ -11,10 +11,8 @@ cases:
         - kind: resource
           uri: systemd://system/unit/service/sshd
       acceptable:
-        - kind: tool
-          name: list_units
-          arguments:
-            type: service
+        - kind: unit_discovery
+          type: service
       answer:
         semantics:
           - recognizes sshd as active and running
@@ -39,10 +37,8 @@ cases:
         - kind: resource
           uri: systemd://system/unit/timer/systemd-tmpfiles-clean
       acceptable:
-        - kind: tool
-          name: list_units
-          arguments:
-            type: timer
+        - kind: unit_discovery
+          type: timer
       answer:
         semantics:
           - recognizes the timer as active
@@ -68,11 +64,9 @@ cases:
         - kind: resource
           uri: systemd://user/testuser/unit/service/example-agent
       acceptable:
-        - kind: tool
-          name: list_units
-          arguments:
-            type: service
-            user: testuser
+        - kind: unit_discovery
+          type: service
+          user: testuser
       answer:
         semantics:
           - recognizes that example-agent is failed
