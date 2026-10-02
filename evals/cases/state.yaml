@@ -17,7 +17,7 @@ cases:
         semantics:
           - recognizes sshd as active and running
     forbidden:
-      calls:
+      interactions:
         - kind: resource
           uri: systemd://system/unit/service/sshd/definition
       answer:
@@ -44,7 +44,7 @@ cases:
           - recognizes the timer as active
           - interprets waiting as its sub-state
     forbidden:
-      calls:
+      interactions:
         - kind: resource
           uri: systemd://system/unit/timer/systemd-tmpfiles-clean/definition
       answer:
@@ -71,7 +71,7 @@ cases:
         semantics:
           - recognizes that example-agent is failed
     forbidden:
-      calls:
+      interactions:
         - kind: resource
           uri: systemd://user/testuser/unit/service/example-agent/definition
       answer:
