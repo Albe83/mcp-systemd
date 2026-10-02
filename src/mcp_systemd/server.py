@@ -4,49 +4,51 @@ from pathlib import Path
 from fastmcp import FastMCP
 
 from mcp_systemd.config import DEFAULT_CONFIG_PATH, load_config
+from mcp_systemd.resources import MockUnitProvider, find_unit
+
+SYSTEM_UNIT_DESCRIPTION = (
+    "A systemd unit managed by the system service manager. "
+    "Service units represent processes controlled and supervised by systemd; "
+    "timer units schedule time-based activation of other units."
+)
+
+USER_UNIT_DESCRIPTION = (
+    "A systemd unit managed by a user's service manager. "
+    "Service units represent processes controlled and supervised by systemd; "
+    "timer units schedule time-based activation of other units."
+)
 
 mcp = FastMCP("mcp-systemd")
-
-SUPPORTED_TYPES = {"service", "timer"}
-
-
-def _mock_unit(
-    *,
-    scope: str,
-    unit_type: str,
-    name: str,
-    user: str | None = None,
-) -> dict[str, object]:
-    if unit_type not in SUPPORTED_TYPES:
-        raise ValueError(f"Unsupported unit type: {unit_type}")
-
-    unit: dict[str, object] = {
-        "name": name,
-        "type": unit_type,
-        "scope": scope,
-        "mock": True,
-        "state": {
-            "active": "active",
-            "sub": "running" if unit_type == "service" else "waiting",
-        },
-    }
-
-    if user is not None:
-        unit["user"] = user
-
-    return unit
+mcp.add_provider(MockUnitProvider())
 
 
-@mcp.resource("systemd://unit/system/{type}/{name}")
-def system_unit(type: str, name: str) -> dict[str, object]:
-    """Return a mock system-scoped unit."""
-    return _mock_unit(scope="system", unit_type=type, name=name)
+@mcp.resource(
+    "systemd://system/unit/{type}/{name}",
+    name="System unit",
+    description=SYSTEM_UNIT_DESCRIPTION,
+    mime_type="application/json",
+)
+def system_unit(type: str, name: str) -> dict[str, str]:
+    return find_unit(
+        scope="system",
+        unit_type=type,
+        name=name,
+    ).content()
 
 
-@mcp.resource("systemd://unit/user/{user}/{type}/{name}")
-def user_unit(user: str, type: str, name: str) -> dict[str, object]:
-    """Return a mock user-scoped unit."""
-    return _mock_unit(scope="user", unit_type=type, name=name, user=user)
+@mcp.resource(
+    "systemd://user/{user}/unit/{type}/{name}",
+    name="User unit",
+    description=USER_UNIT_DESCRIPTION,
+    mime_type="application/json",
+)
+def user_unit(user: str, type: str, name: str) -> dict[str, str]:
+    return find_unit(
+        scope="user",
+        user=user,
+        unit_type=type,
+        name=name,
+    ).content()
 
 
 def main() -> None:

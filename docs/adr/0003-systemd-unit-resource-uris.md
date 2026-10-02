@@ -16,13 +16,13 @@ Systemd conventionally includes the unit type in the unit name, for example `htt
 The unit resource templates are:
 
 ```text
-systemd://unit/system/{type}/{name}
-systemd://unit/user/{user}/{type}/{name}
+systemd://system/unit/{type}/{name}
+systemd://user/{user}/unit/{type}/{name}
 ```
 
 The rules are:
 
-- `system` and `user` are distinct resource namespaces.
+- `system` and `user` identify the systemd manager scope.
 - User-scoped resources include the user identity because each user has a distinct systemd user manager.
 - `{type}` identifies the systemd unit type.
 - The initial supported values for `{type}` are `service` and `timer`.
@@ -32,10 +32,10 @@ The rules are:
 Examples:
 
 ```text
-systemd://unit/system/service/httpd
-systemd://unit/system/timer/dnf-makecache
-systemd://unit/user/albe/service/cortana
-systemd://unit/user/albe/timer/backup
+systemd://system/unit/service/httpd
+systemd://system/unit/timer/dnf-makecache
+systemd://user/albe/unit/service/cortana
+systemd://user/albe/unit/timer/backup
 ```
 
 These correspond internally to unit names such as:
@@ -50,7 +50,7 @@ backup.timer
 The same rule applies to instantiated units. For example:
 
 ```text
-systemd://unit/system/service/foo@bar
+systemd://system/unit/service/foo@bar
 ```
 
 maps to:
@@ -61,7 +61,7 @@ foo@bar.service
 
 ## Consequences
 
-- Scope is explicit and unambiguous in every unit resource URI.
+- Manager scope is explicit and unambiguous in every unit resource URI.
 - Unit type is a parameter of the resource model rather than being hardcoded into separate templates.
 - The resource identifier remains semantic rather than mirroring systemd filename syntax.
 - Models can use names closer to typical user language, such as `httpd` instead of `httpd.service`.
