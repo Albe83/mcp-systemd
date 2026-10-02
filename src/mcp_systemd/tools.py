@@ -55,26 +55,26 @@ def register_tools(
         @mcp.tool(
             name="read_unit",
             description=(
-                "Read a systemd unit's current state. "
-                "Use the unit resource URI returned by list_units."
+                "Read a systemd unit's current state from its resource URI. "
+                "Use this for runtime-state questions."
             ),
             annotations=READ_ONLY_CLOSED_WORLD,
         )
         def read_unit(
-            uri: Annotated[str, "Unit resource URI."],
+            uri: Annotated[str, "Base unit resource URI."],
         ) -> dict[str, str]:
             return find_unit_by_uri(uri).content()
 
         @mcp.tool(
             name="read_unit_definition",
             description=(
-                "Read a systemd unit's definition and drop-ins. "
+                "Read a systemd unit's definition and drop-ins from its resource URI. "
                 "Use this for configuration questions."
             ),
             annotations=READ_ONLY_CLOSED_WORLD,
         )
         def read_unit_definition(
-            uri: Annotated[str, "Unit resource URI."],
+            uri: Annotated[str, "Base unit resource URI."],
         ) -> str:
             return find_unit_by_uri(uri).definition
 
