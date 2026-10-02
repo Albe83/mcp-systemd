@@ -38,11 +38,14 @@ Each concrete resource exposed through `resources/list` carries lightweight MCP 
 }
 ```
 
-For the initial interface, reading a unit resource returns only:
+Reading the base unit resource returns its compact current representation:
 
 ```json
 {
-  "description": "OpenSSH server daemon"
+  "description": "OpenSSH server daemon",
+  "load_state": "loaded",
+  "active_state": "active",
+  "sub_state": "running"
 }
 ```
 
@@ -61,12 +64,12 @@ resource content
     -> properties of the identified resource
 ```
 
-The resource payload will be expanded incrementally as the interface is designed and validated.
+Runtime state and the use of optional sub-resources for larger views are defined in ADR 0010.
 
 ## Consequences
 
 - Resource discovery has a clear systemd analogue without exposing every installed unit file.
 - `resources/list` remains lightweight and suitable for catalog/discovery use.
 - Resource content does not duplicate identity already encoded in the URI.
-- Resource content starts deliberately small and can evolve based on observed model needs.
+- The base resource provides compact state useful for common operational decisions.
 - Discovery of user managers is an implementation concern that can be refined later without changing the URI or resource-content contract.
