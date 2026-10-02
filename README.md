@@ -19,10 +19,11 @@ Reading a unit resource currently returns only:
 
 ```json
 {
-  "name": "sshd",
   "description": "OpenSSH server daemon"
 }
 ```
+
+The URI carries the unit identity, so the payload does not repeat the unit name.
 
 ## Discovery tools
 
