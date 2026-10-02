@@ -24,21 +24,27 @@ list_unit_types
 
 ### `list_units`
 
-`list_units` exposes the same logical unit catalog as `resources/list`.
+`list_units` queries the same logical unit catalog used by `resources/list`.
 
-Both interfaces must share the same underlying discovery code and semantics:
+Both interfaces must share the same underlying discovery code and semantics. `resources/list` exposes the concrete resource catalog to the client, while `list_units` provides a model-controlled filtered view of that catalog.
+
+Its base semantics remain those defined for resource discovery: the logical equivalent of `systemctl list-units --all`, restricted to the unit types supported by mcp-systemd.
+
+The initial optional filters are:
 
 ```text
-                  unit catalog
-                  /          \
-                 /            \
-        resources/list      list_units
-        client-facing       model-controlled
+type
+user
 ```
 
-The tool must not implement an independent discovery path that could disagree with `resources/list`.
+Their semantics are:
 
-Its semantics remain those defined for resource discovery: the logical equivalent of `systemctl list-units --all`, restricted to the unit types supported by mcp-systemd.
+- omitted `type`: all supported unit types;
+- provided `type`: only that unit type;
+- omitted `user`: query the system service manager;
+- provided `user`: query that user's service manager.
+
+A separate `scope` parameter is intentionally not exposed. The presence of `user` fully determines the manager scope, which keeps the model-facing schema smaller and avoids invalid combinations such as a system scope paired with a user identity.
 
 ### `list_unit_types`
 
@@ -97,7 +103,9 @@ For resource-oriented MCP servers:
 - Smaller models do not need to infer valid resource types from URI templates alone.
 - Adding new unit types does not require rewriting generic Resource Template descriptions.
 - Tool descriptions remain focused on invocation decisions rather than implementation details.
+- Optional filters reduce result size and token consumption when the model already knows part of what it is looking for.
+- The manager scope is expressed without a separate model-facing `scope` parameter.
 - Clients can continue to use native MCP resource discovery independently of the model.
-- Resource and tool views cannot intentionally diverge because they share the same catalog abstraction.
+- Resource and tool views share the same catalog abstraction.
 - The MCP interface becomes more portable across harnesses with different resource-injection behavior.
 - The pattern can be reused when designing other resource-oriented MCP servers.
