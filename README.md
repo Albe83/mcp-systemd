@@ -7,11 +7,22 @@ This first version is intentionally a **mock**: it exposes systemd unit resource
 ## Resource templates
 
 ```text
-systemd://unit/system/{type}/{name}
-systemd://unit/user/{user}/{type}/{name}
+systemd://system/unit/{type}/{name}
+systemd://user/{user}/unit/{type}/{name}
 ```
 
 The initial mock supports `service` and `timer` as unit types.
+
+`resources/list` exposes a mock catalog representing the logical equivalent of `systemctl list-units --all`, restricted to the supported unit types.
+
+Reading a unit resource currently returns only:
+
+```json
+{
+  "name": "sshd",
+  "description": "OpenSSH server daemon"
+}
+```
 
 ## Run
 
