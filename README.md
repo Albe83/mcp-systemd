@@ -20,4 +20,4 @@ uv sync
 uv run mcp-systemd
 ```
 
-The server uses FastMCP's default STDIO transport.
+The server uses FastMCP HTTP transport by default and listens on `0.0.0.0:8000`.
