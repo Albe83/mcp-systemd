@@ -53,6 +53,10 @@ timer
 
 This makes the interface self-describing for the model instead of requiring supported types and their meaning to be embedded in an external agent prompt.
 
+The generic unit Resource Templates describe the abstraction of a systemd unit and its manager scope. They must not enumerate or explain the currently supported unit types. Type-specific semantics belong in the unit-type catalog exposed by `list_unit_types`.
+
+This keeps the stable resource abstraction independent from the temporary subset of unit types implemented at any given stage.
+
 ### Resources remain the object model
 
 Discovery tools help the model find and understand resources; they do not replace the resources themselves.
@@ -64,16 +68,19 @@ The server therefore does not introduce a parallel `read_unit` tool at this stag
 For resource-oriented MCP servers:
 
 1. use Resources to model domain objects and their semantic representations;
-2. identify information the model needs in order to navigate or understand that resource model;
-3. when that information is not predictably available to the model, expose a small model-controlled discovery or introspection Tool;
-4. share underlying logic between client-facing resource discovery and model-facing tool discovery;
-5. avoid duplicating resource read or mutation semantics as tools without a demonstrated need;
-6. prefer self-describing interfaces over hidden assumptions in agent prompts.
+2. keep generic Resource descriptions focused on the abstraction, not on the current set of concrete variants;
+3. identify information the model needs in order to navigate or understand that resource model;
+4. when that information is not predictably available to the model, expose a small model-controlled discovery or introspection Tool;
+5. keep variant/type metadata in a dedicated self-description mechanism when the set is expected to evolve;
+6. share underlying logic between client-facing resource discovery and model-facing tool discovery;
+7. avoid duplicating resource read or mutation semantics as tools without a demonstrated need;
+8. prefer self-describing interfaces over hidden assumptions in agent prompts.
 
 ## Consequences
 
 - Models have an explicit and predictable path for discovering unit resources.
 - Smaller models do not need to infer valid resource types from URI templates alone.
+- Adding new unit types does not require rewriting generic Resource Template descriptions.
 - Clients can continue to use native MCP resource discovery independently of the model.
 - Resource and tool views cannot intentionally diverge because they share the same catalog abstraction.
 - The MCP interface becomes more portable across harnesses with different resource-injection behavior.
