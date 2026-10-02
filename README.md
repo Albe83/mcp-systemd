@@ -33,14 +33,18 @@ The URI carries the unit identity, so the payload does not repeat the unit name.
 
 The `/definition` sub-resource returns the unit file and drop-ins as text. It is separate because configuration content can be much larger and is not needed for most state-oriented decisions.
 
-## Discovery tools
+## Model-facing tools
 
-Two small tools make the resource model explicitly discoverable by models:
+The server exposes semantic tools that make the Resource model usable even when an MCP harness does not expose Resource operations directly to the model:
 
-- `list_units` exposes the same unit catalog as `resources/list`;
-- `list_unit_types` lists the supported unit types and their semantic descriptions.
+- `list_units(type?, user?)` discovers unit Resources;
+- `read_unit(uri)` reads the compact current state of a unit;
+- `read_unit_definition(uri)` reads its definition and drop-ins;
+- `list_unit_types()` describes the unit types supported by mcp-systemd.
 
-The tools are for discovery and introspection. Unit resources remain the canonical object representation.
+`read_unit` and `read_unit_definition` both accept the base unit Resource URI. The model does not need to construct sub-resource URIs.
+
+The Resources remain canonical. The first three tools are a semantic fallback and can be disabled when the deployment harness already provides model-controlled Resource listing and reading.
 
 ## Semantic evaluations
 
@@ -75,13 +79,18 @@ The default configuration path is:
 
 If the file does not exist, the secure defaults are used.
 
-Minimal configuration:
+Example:
 
 ```yaml
 server:
   host: 127.0.0.1
   port: 48000
+
+tools:
+  resource_api_fallback: true
 ```
+
+Set `tools.resource_api_fallback` to `false` to hide `list_units`, `read_unit`, and `read_unit_definition` when the harness provides equivalent model-controlled Resource access. Native MCP Resources remain exposed, and `list_unit_types` remains available.
 
 A different configuration file can be selected explicitly:
 

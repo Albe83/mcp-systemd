@@ -14,3 +14,4 @@ This directory contains the Architecture Decision Records (ADRs) for **mcp-syste
 | [0008](0008-tool-annotations.md) | Use MCP tool annotations as behavioral metadata | Accepted |
 | [0009](0009-model-facing-token-discipline.md) | Optimize model-facing interfaces for decision value and token efficiency | Accepted |
 | [0010](0010-unit-state-and-subresources.md) | Keep core unit state on the base resource and optional heavy views as sub-resources | Accepted |
+| [0011](0011-semantic-resource-api-fallback.md) | Provide semantic Resource API fallback tools | Accepted |

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Literal
+from urllib.parse import urlparse
 
 Scope = Literal["system", "user"]
 
@@ -180,3 +181,34 @@ def find_unit(
             return unit
 
     raise ValueError("Unit not found")
+
+
+def find_unit_by_uri(uri: str) -> UnitRecord:
+    parsed = urlparse(uri)
+    if parsed.scheme != "systemd":
+        raise ValueError("Invalid unit resource URI")
+
+    parts = [part for part in parsed.path.split("/") if part]
+
+    if parsed.netloc == "system" and len(parts) == 3 and parts[0] == "unit":
+        _, unit_type, name = parts
+        return find_unit(
+            scope="system",
+            unit_type=unit_type,
+            name=name,
+        )
+
+    if (
+        parsed.netloc == "user"
+        and len(parts) == 4
+        and parts[1] == "unit"
+    ):
+        user, _, unit_type, name = parts
+        return find_unit(
+            scope="user",
+            user=user,
+            unit_type=unit_type,
+            name=name,
+        )
+
+    raise ValueError("Invalid unit resource URI")
