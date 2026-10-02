@@ -1,0 +1,73 @@
+cases:
+  - id: discover-services
+    category: discovery
+    tags:
+      - token-efficiency
+      - type-filter
+    prompt: |
+      Which systemd services are available?
+    expected:
+      required:
+        - kind: tool
+          name: list_units
+          arguments:
+            type: service
+      acceptable: []
+      answer:
+        semantics:
+          - reports the available service units
+    forbidden:
+      calls:
+        - kind: tool
+          name: list_unit_types
+      answer:
+        semantics: []
+    notes: |
+      The requested unit type is already known. Calling list_unit_types adds no decision value.
+
+  - id: discover-units
+    category: discovery
+    tags:
+      - token-efficiency
+    prompt: |
+      Which systemd units are currently known?
+    expected:
+      required:
+        - kind: tool
+          name: list_units
+          arguments: {}
+      acceptable: []
+      answer:
+        semantics:
+          - reports units known by the system service manager
+    forbidden:
+      calls: []
+      answer:
+        semantics: []
+    notes: |
+      No type filter is needed because the user asked for all supported unit types.
+
+  - id: discover-user-services
+    category: discovery
+    tags:
+      - user-scope
+      - type-filter
+    prompt: |
+      Which services does testuser have?
+    expected:
+      required:
+        - kind: tool
+          name: list_units
+          arguments:
+            type: service
+            user: testuser
+      acceptable: []
+      answer:
+        semantics:
+          - reports services belonging to testuser's service manager
+    forbidden:
+      calls: []
+      answer:
+        semantics: []
+    notes: |
+      Tests whether the user argument is sufficient to select the user manager without a scope parameter.

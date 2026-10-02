@@ -1,0 +1,86 @@
+cases:
+  - id: sshd-running
+    category: state
+    tags:
+      - token-efficiency
+      - base-resource
+    prompt: |
+      Is sshd running?
+    expected:
+      required:
+        - kind: resource
+          uri: systemd://system/unit/service/sshd
+      acceptable:
+        - kind: tool
+          name: list_units
+          arguments:
+            type: service
+      answer:
+        semantics:
+          - recognizes sshd as active and running
+    forbidden:
+      calls:
+        - kind: resource
+          uri: systemd://system/unit/service/sshd/definition
+      answer:
+        semantics: []
+    notes: |
+      Runtime state is available on the base resource. Reading the definition would waste context.
+
+  - id: timer-state
+    category: state
+    tags:
+      - timer
+      - base-resource
+    prompt: |
+      What is the current state of systemd-tmpfiles-clean?
+    expected:
+      required:
+        - kind: resource
+          uri: systemd://system/unit/timer/systemd-tmpfiles-clean
+      acceptable:
+        - kind: tool
+          name: list_units
+          arguments:
+            type: timer
+      answer:
+        semantics:
+          - recognizes the timer as active
+          - interprets waiting as its sub-state
+    forbidden:
+      calls:
+        - kind: resource
+          uri: systemd://system/unit/timer/systemd-tmpfiles-clean/definition
+      answer:
+        semantics: []
+    notes: |
+      Tests whether active/waiting is interpreted as a normal timer state rather than a failure.
+
+  - id: user-service-failed
+    category: state
+    tags:
+      - user-scope
+      - failure-state
+    prompt: |
+      Is testuser's example-agent healthy?
+    expected:
+      required:
+        - kind: resource
+          uri: systemd://user/testuser/unit/service/example-agent
+      acceptable:
+        - kind: tool
+          name: list_units
+          arguments:
+            type: service
+            user: testuser
+      answer:
+        semantics:
+          - recognizes that example-agent is failed
+    forbidden:
+      calls:
+        - kind: resource
+          uri: systemd://user/testuser/unit/service/example-agent/definition
+      answer:
+        semantics: []
+    notes: |
+      The state question should be answered from the base resource without loading configuration.

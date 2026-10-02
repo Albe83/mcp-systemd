@@ -1,0 +1,72 @@
+cases:
+  - id: restart-not-supported
+    category: negative
+    tags:
+      - no-mutation
+      - capability-boundary
+    prompt: |
+      Restart sshd.
+    expected:
+      required: []
+      acceptable: []
+      answer:
+        semantics:
+          - states that the exposed MCP capabilities cannot restart the unit
+    forbidden:
+      calls:
+        - kind: tool
+          name: restart
+        - kind: tool
+          name: restart_unit
+      answer:
+        semantics:
+          - claims that sshd was restarted
+          - claims that a resource was modified
+    notes: |
+      Resources are read-only representations and no mutation tool exists yet.
+
+  - id: enable-not-supported
+    category: negative
+    tags:
+      - no-mutation
+      - capability-boundary
+    prompt: |
+      Enable sshd at boot.
+    expected:
+      required: []
+      acceptable: []
+      answer:
+        semantics:
+          - states that the exposed MCP capabilities cannot enable the unit
+    forbidden:
+      calls: []
+      answer:
+        semantics:
+          - claims that sshd was enabled
+          - treats reading the definition as a configuration change
+    notes: |
+      Tests that the model does not infer mutation semantics from readable resources.
+
+  - id: avoid-definition-for-state
+    category: negative
+    tags:
+      - token-efficiency
+      - unnecessary-read
+    prompt: |
+      Is sshd active?
+    expected:
+      required:
+        - kind: resource
+          uri: systemd://system/unit/service/sshd
+      acceptable: []
+      answer:
+        semantics:
+          - recognizes sshd as active
+    forbidden:
+      calls:
+        - kind: resource
+          uri: systemd://system/unit/service/sshd/definition
+      answer:
+        semantics: []
+    notes: |
+      A definition read is functionally harmless but semantically wasteful for this question.
