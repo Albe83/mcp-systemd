@@ -4,9 +4,31 @@ from typing import Literal
 from fastmcp.resources import Resource
 from fastmcp.server.providers import Provider
 
-SUPPORTED_TYPES = {"service", "timer"}
-
 Scope = Literal["system", "user"]
+
+
+@dataclass(frozen=True)
+class UnitTypeRecord:
+    name: str
+    description: str
+
+
+UNIT_TYPES = (
+    UnitTypeRecord(
+        name="service",
+        description=(
+            "A unit that represents and controls a service or process managed by systemd."
+        ),
+    ),
+    UnitTypeRecord(
+        name="timer",
+        description=(
+            "A unit that schedules time-based activation of another systemd unit."
+        ),
+    ),
+)
+
+SUPPORTED_TYPES = {unit_type.name for unit_type in UNIT_TYPES}
 
 
 @dataclass(frozen=True)
@@ -29,6 +51,13 @@ class UnitRecord:
 
     def content(self) -> dict[str, str]:
         return {
+            "name": self.name,
+            "description": self.description,
+        }
+
+    def discovery(self) -> dict[str, str]:
+        return {
+            "uri": self.uri,
             "name": self.name,
             "description": self.description,
         }
@@ -61,6 +90,15 @@ MOCK_UNITS = (
         description="Example user service",
     ),
 )
+
+
+def list_unit_records() -> tuple[UnitRecord, ...]:
+    """Return the unit catalog exposed by resources/list and list_units."""
+    return MOCK_UNITS
+
+
+def list_unit_type_records() -> tuple[UnitTypeRecord, ...]:
+    return UNIT_TYPES
 
 
 def find_unit(
@@ -102,4 +140,4 @@ class MockUnitProvider(Provider):
     """Expose the mock unit catalog as concrete MCP resources."""
 
     async def _list_resources(self) -> list[Resource]:
-        return [_resource_from_unit(unit) for unit in MOCK_UNITS]
+        return [_resource_from_unit(unit) for unit in list_unit_records()]
