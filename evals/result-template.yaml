@@ -3,7 +3,11 @@ run:
   model: ""
   harness: ""
   server_revision: ""
-  resource_api_fallback: true
+  tools:
+    groups:
+      resource_api_fallback: true
+    enable: []
+    disable: []
   notes: ""
 
 results:
