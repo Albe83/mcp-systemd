@@ -6,6 +6,7 @@ from mcp_systemd.catalog import UnitRecord, find_unit, list_unit_records
 
 SYSTEM_UNIT_DESCRIPTION = "A systemd unit managed by the system service manager."
 USER_UNIT_DESCRIPTION = "A systemd unit managed by a user's service manager."
+UNIT_DEFINITION_DESCRIPTION = "Unit file and drop-ins for a systemd unit."
 
 
 def _resource_from_unit(unit: UnitRecord) -> Resource:
@@ -57,3 +58,30 @@ def register_resources(mcp: FastMCP) -> None:
             unit_type=type,
             name=name,
         ).content()
+
+    @mcp.resource(
+        "systemd://system/unit/{type}/{name}/definition",
+        name="Unit definition",
+        description=UNIT_DEFINITION_DESCRIPTION,
+        mime_type="text/plain",
+    )
+    def system_unit_definition(type: str, name: str) -> str:
+        return find_unit(
+            scope="system",
+            unit_type=type,
+            name=name,
+        ).definition
+
+    @mcp.resource(
+        "systemd://user/{user}/unit/{type}/{name}/definition",
+        name="Unit definition",
+        description=UNIT_DEFINITION_DESCRIPTION,
+        mime_type="text/plain",
+    )
+    def user_unit_definition(user: str, type: str, name: str) -> str:
+        return find_unit(
+            scope="user",
+            user=user,
+            unit_type=type,
+            name=name,
+        ).definition
