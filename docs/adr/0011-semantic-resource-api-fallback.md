@@ -27,7 +27,7 @@ These tools are domain-specific projections of the Resource model, not an altern
 
 ### `read_unit`
 
-`read_unit(uri)` accepts the URI of a base unit resource:
+`read_unit(uri)` accepts the canonical URI of a base unit resource:
 
 ```text
 systemd://system/unit/service/sshd
@@ -35,6 +35,8 @@ systemd://user/albe/unit/service/cortana
 ```
 
 and returns the same compact unit representation exposed by reading that base Resource.
+
+Fallback tools accept only canonical base Resource URIs so their addressing contract does not become more permissive than native Resource access.
 
 ### `read_unit_definition`
 
@@ -77,7 +79,15 @@ The Resources themselves remain available through MCP.
 
 `list_unit_types` is not part of this fallback class because it exposes mcp-systemd-specific semantic introspection rather than duplicating a Resource protocol operation.
 
-This allows deployments whose harness already provides model-controlled Resource listing and reading to reduce duplicate tools, token cost, and tool-selection ambiguity.
+The fallback should be disabled only when the deployment harness gives the model an equivalent path to:
+
+- discover concrete unit Resources;
+- discover or otherwise address semantic sub-resources such as `/definition`;
+- read those Resources.
+
+A harness that only exposes `resources/list` and `resources/read` but does not make Resource Templates or the definition view discoverable is not yet equivalent for the current interface.
+
+This allows deployments with complete model-controlled Resource support to reduce duplicate tools, token cost, and tool-selection ambiguity without losing semantic capability.
 
 ## General design principle
 
@@ -87,12 +97,13 @@ When portability across MCP harnesses requires a fallback for client-controlled 
 2. expose only the model-facing operations needed for the domain;
 3. name fallback operations in domain language rather than protocol language;
 4. route native and fallback access through the same underlying representation;
-5. make overlapping fallback capabilities removable at deployment time.
+5. keep fallback addressing no more permissive than canonical Resource addressing;
+6. make overlapping fallback capabilities removable at deployment time.
 
 ## Consequences
 
 - mcp-systemd does not depend on a harness-specific Resource projection.
 - Models can discover and read units even when the harness does not expose Resource operations directly.
-- Harnesses with native Resource support can remove overlapping tools.
+- Harnesses with complete native Resource support can remove overlapping tools.
 - The model never needs a generic `read_resource` abstraction.
 - Sub-resource structure can evolve without requiring the fallback tool contract to expose URI navigation details.
