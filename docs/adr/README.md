@@ -11,3 +11,4 @@ This directory contains the Architecture Decision Records (ADRs) for **mcp-syste
 | [0005](0005-security-by-default.md) | Apply security-by-default to network exposure | Accepted |
 | [0006](0006-resource-discovery.md) | Discover loaded systemd units through resources/list | Accepted |
 | [0007](0007-model-controlled-resource-discovery.md) | Provide model-controlled discovery for resource-oriented interfaces | Accepted |
+| [0008](0008-tool-annotations.md) | Use MCP tool annotations as behavioral metadata | Accepted |

@@ -1,6 +1,13 @@
 from fastmcp import FastMCP
+from mcp.types import ToolAnnotations
 
 from mcp_systemd.catalog import list_unit_records, list_unit_type_records
+
+
+READ_ONLY_CLOSED_WORLD = ToolAnnotations(
+    readOnlyHint=True,
+    openWorldHint=False,
+)
 
 
 def register_tools(mcp: FastMCP) -> None:
@@ -10,6 +17,7 @@ def register_tools(mcp: FastMCP) -> None:
             "List systemd units known by the service manager. "
             "Use this to discover units or find one when its exact name is unknown."
         ),
+        annotations=READ_ONLY_CLOSED_WORLD,
     )
     def list_units() -> dict[str, list[dict[str, str]]]:
         return {
@@ -22,6 +30,7 @@ def register_tools(mcp: FastMCP) -> None:
             "List supported systemd unit types and what they represent. "
             "Use this when you need to identify or understand a unit type."
         ),
+        annotations=READ_ONLY_CLOSED_WORLD,
     )
     def list_unit_types() -> dict[str, list[dict[str, str]]]:
         return {
