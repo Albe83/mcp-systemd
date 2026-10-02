@@ -93,7 +93,7 @@ def validate_case(case: dict, seen_ids: set[str]) -> None:
         validate_interaction(interaction, case_id)
 
     for interaction in require_list(
-        forbidden.get("calls", []), "forbidden.calls", case_id
+        forbidden.get("interactions", []), "forbidden.interactions", case_id
     ):
         validate_interaction(interaction, case_id)
 
