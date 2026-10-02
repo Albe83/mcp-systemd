@@ -10,3 +10,4 @@ This directory contains the Architecture Decision Records (ADRs) for **mcp-syste
 | [0004](0004-interface-first-iterative-development.md) | Develop interface-first using an MCP stub before backend implementation | Accepted |
 | [0005](0005-security-by-default.md) | Apply security-by-default to network exposure | Accepted |
 | [0006](0006-resource-discovery.md) | Discover loaded systemd units through resources/list | Accepted |
+| [0007](0007-model-controlled-resource-discovery.md) | Provide model-controlled discovery for resource-oriented interfaces | Accepted |
