@@ -33,16 +33,35 @@ fix/user-scope-resolution
 docs/resource-model
 ```
 
+## Dependencies
+
+Dependencies are resolved in `uv.lock`.
+
+Use the locked environment for normal development:
+
+```bash
+uv sync --locked
+```
+
+When `pyproject.toml` dependencies change, regenerate and commit the lockfile:
+
+```bash
+uv lock
+```
+
 ## Checks
 
 Before opening or merging a pull request, run:
 
 ```bash
+uv sync --locked
 uv run python -m unittest discover -s tests
 uv run python evals/validate.py
 ```
 
 Functional tests protect code-level contracts. Semantic evals remain a separate model-facing corpus and are not replaced by functional tests.
+
+The GitHub Actions `CI` workflow runs the same checks in a clean environment, but it is intentionally **manual only**. It does not run on pushes or pull requests. Trigger it from **Actions → CI → Run workflow** when remote verification is useful.
 
 ## Commit messages
 
