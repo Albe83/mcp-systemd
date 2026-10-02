@@ -89,9 +89,29 @@ MOCK_UNITS = (
 )
 
 
-def list_unit_records() -> tuple[UnitRecord, ...]:
-    """Return the unit catalog exposed by resources/list and list_units."""
-    return MOCK_UNITS
+def list_unit_records(
+    *,
+    unit_type: str | None = None,
+    scope: Scope | None = None,
+    user: str | None = None,
+) -> tuple[UnitRecord, ...]:
+    """Return matching units from the shared discovery catalog."""
+    if unit_type is not None and unit_type not in SUPPORTED_TYPES:
+        raise ValueError(f"Unsupported unit type: {unit_type}")
+
+    if user == "":
+        raise ValueError("user must be a non-empty string")
+
+    if scope == "system" and user is not None:
+        raise ValueError("system scope cannot specify a user")
+
+    return tuple(
+        unit
+        for unit in MOCK_UNITS
+        if (unit_type is None or unit.type == unit_type)
+        and (scope is None or unit.scope == scope)
+        and (user is None or unit.user == user)
+    )
 
 
 def list_unit_type_records() -> tuple[UnitTypeRecord, ...]:
