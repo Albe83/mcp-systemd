@@ -7,6 +7,7 @@ import yaml
 CASES_DIR = Path(__file__).parent / "cases"
 CATEGORIES = {"discovery", "state", "definition", "negative"}
 INTERACTION_KINDS = {"tool", "resource", "unit_discovery"}
+DISCOVERY_SCOPES = {"system", "user"}
 
 
 def fail(message: str) -> None:
@@ -39,14 +40,23 @@ def validate_interaction(interaction: object, case_id: str) -> None:
             fail(f"{case_id}: resource interaction requires uri")
 
     if kind == "unit_discovery":
+        scope = interaction.get("scope")
         unit_type = interaction.get("type")
         user = interaction.get("user")
+
+        if scope not in DISCOVERY_SCOPES:
+            fail(f"{case_id}: unit discovery requires system or user scope")
+
         if unit_type is not None and (
             not isinstance(unit_type, str) or not unit_type
         ):
             fail(f"{case_id}: unit discovery type must be a non-empty string")
-        if user is not None and (not isinstance(user, str) or not user):
-            fail(f"{case_id}: unit discovery user must be a non-empty string")
+
+        if scope == "system" and user is not None:
+            fail(f"{case_id}: system unit discovery cannot specify user")
+
+        if scope == "user" and (not isinstance(user, str) or not user):
+            fail(f"{case_id}: user unit discovery requires user")
 
 
 def validate_semantics(value: object, label: str, case_id: str) -> None:
