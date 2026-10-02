@@ -13,10 +13,8 @@ cases:
       acceptable:
         - kind: resource
           uri: systemd://system/unit/service/sshd
-        - kind: tool
-          name: list_units
-          arguments:
-            type: service
+        - kind: unit_discovery
+          type: service
       answer:
         semantics:
           - explains the relevant unit definition
@@ -38,7 +36,9 @@ cases:
       required:
         - kind: resource
           uri: systemd://system/unit/timer/systemd-tmpfiles-clean/definition
-      acceptable: []
+      acceptable:
+        - kind: unit_discovery
+          type: timer
       answer:
         semantics:
           - identifies the scheduling directive from the unit definition
