@@ -7,11 +7,11 @@
 
 Resource templates describe which systemd unit resources can be addressed, but clients also need a lightweight way to discover concrete resources currently known by systemd.
 
-Systemd distinguishes units currently loaded by a manager from unit files installed on disk. The initial MCP discovery model should remain narrow and map to the manager's current view rather than attempt to enumerate every installed unit file.
+Systemd distinguishes units currently loaded by a manager from unit files installed on disk. The initial MCP discovery model should remain narrow and map to manager runtime views rather than attempt to enumerate every installed unit file.
 
 ## Decision
 
-`resources/list` is the logical equivalent of:
+For each systemd manager represented by mcp-systemd, unit discovery has the logical semantics of:
 
 ```text
 systemctl list-units --all
@@ -26,7 +26,9 @@ service
 timer
 ```
 
-Therefore discovery represents units currently known/loaded by the relevant systemd manager, including inactive loaded units, and does not attempt to mirror `systemctl list-unit-files`.
+`resources/list` exposes the union of the concrete unit Resources known across the represented managers on the host. Therefore a single Resource catalog may contain both system-manager and user-manager units.
+
+Discovery includes inactive loaded units and does not attempt to mirror `systemctl list-unit-files`.
 
 Each concrete resource exposed through `resources/list` carries lightweight MCP metadata:
 
@@ -68,8 +70,9 @@ Runtime state and the use of optional sub-resources for larger views are defined
 
 ## Consequences
 
-- Resource discovery has a clear systemd analogue without exposing every installed unit file.
+- Resource discovery has a clear per-manager systemd analogue without exposing every installed unit file.
+- `resources/list` can represent more than one systemd manager while preserving manager scope in each URI.
 - `resources/list` remains lightweight and suitable for catalog/discovery use.
 - Resource content does not duplicate identity already encoded in the URI.
 - The base resource provides compact state useful for common operational decisions.
-- Discovery of user managers is an implementation concern that can be refined later without changing the URI or resource-content contract.
+- Discovery of which user managers are represented is an implementation concern that can be refined later without changing the URI or resource-content contract.

@@ -3,12 +3,13 @@ run:
   model: ""
   harness: ""
   server_revision: ""
+  resource_api_fallback: true
   notes: ""
 
 results:
   - id: case-id
     rating: pass | acceptable | fail
     observed:
-      calls: []
+      interactions: []
       answer: ""
     notes: ""

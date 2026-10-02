@@ -5,43 +5,43 @@ cases:
       - token-efficiency
       - type-filter
     prompt: |
-      Which systemd services are available?
+      Which systemd services are available in the system manager?
     expected:
       required:
-        - kind: tool
-          name: list_units
-          arguments:
-            type: service
+        - kind: unit_discovery
+          scope: system
+          type: service
       acceptable: []
       answer:
         semantics:
-          - reports the available service units
+          - reports the available system-manager service units
     forbidden:
-      calls:
+      interactions:
         - kind: tool
           name: list_unit_types
       answer:
         semantics: []
     notes: |
-      The requested unit type is already known. Calling list_unit_types adds no decision value.
+      The requested unit type is already known. Discovery may be realized by
+      list_units or by harness-native Resource discovery. Calling
+      list_unit_types adds no decision value.
 
-  - id: discover-units
+  - id: discover-system-units
     category: discovery
     tags:
       - token-efficiency
     prompt: |
-      Which systemd units are currently known?
+      Which systemd units are currently known by the system manager?
     expected:
       required:
-        - kind: tool
-          name: list_units
-          arguments: {}
+        - kind: unit_discovery
+          scope: system
       acceptable: []
       answer:
         semantics:
           - reports units known by the system service manager
     forbidden:
-      calls: []
+      interactions: []
       answer:
         semantics: []
     notes: |
@@ -56,18 +56,18 @@ cases:
       Which services does testuser have?
     expected:
       required:
-        - kind: tool
-          name: list_units
-          arguments:
-            type: service
-            user: testuser
+        - kind: unit_discovery
+          scope: user
+          type: service
+          user: testuser
       acceptable: []
       answer:
         semantics:
           - reports services belonging to testuser's service manager
     forbidden:
-      calls: []
+      interactions: []
       answer:
         semantics: []
     notes: |
-      Tests whether the user argument is sufficient to select the user manager without a scope parameter.
+      Tests whether user-scoped discovery is understood without depending on
+      the harness-specific mechanism used to enumerate Resources.

@@ -28,7 +28,7 @@ list_unit_types
 
 Both interfaces must share the same underlying discovery code and semantics. `resources/list` exposes the concrete resource catalog to the client, while `list_units` provides a model-controlled filtered view of that catalog.
 
-Its base semantics remain those defined for resource discovery: the logical equivalent of `systemctl list-units --all`, restricted to the unit types supported by mcp-systemd.
+For the selected manager, its base semantics remain those defined for resource discovery: the logical equivalent of `systemctl list-units --all`, restricted to the unit types supported by mcp-systemd.
 
 The initial optional filters are:
 

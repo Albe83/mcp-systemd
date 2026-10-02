@@ -16,7 +16,7 @@ systemd://user/{user}/unit/{type}/{name}/definition
 
 The initial mock supports `service` and `timer` as unit types.
 
-`resources/list` exposes a mock catalog representing the logical equivalent of `systemctl list-units --all`, restricted to the supported unit types.
+For each represented systemd manager, discovery follows the logical semantics of `systemctl list-units --all`, restricted to supported unit types. `resources/list` exposes the combined concrete Resource catalog across the represented managers on the host.
 
 Reading a unit resource returns compact runtime state:
 
@@ -42,9 +42,9 @@ The server exposes semantic tools that make the Resource model usable even when 
 - `read_unit_definition(uri)` reads its definition and drop-ins;
 - `list_unit_types()` describes the unit types supported by mcp-systemd.
 
-`read_unit` and `read_unit_definition` both accept the base unit Resource URI. The model does not need to construct sub-resource URIs.
+`read_unit` and `read_unit_definition` both accept the canonical base unit Resource URI. The model does not need to construct sub-resource URIs.
 
-The Resources remain canonical. The first three tools are a semantic fallback and can be disabled when the deployment harness already provides model-controlled Resource listing and reading.
+The Resources remain canonical. The first three tools are a semantic fallback and can be disabled when the deployment harness already gives the model equivalent access to concrete Resource discovery, Resource Templates or equivalent sub-resource discovery, and Resource reading.
 
 ## Semantic evaluations
 
@@ -57,6 +57,14 @@ uv run python evals/validate.py
 ```
 
 See `evals/README.md` for the case format and execution protocol.
+
+## Functional checks
+
+Run the lightweight functional test suite with:
+
+```bash
+uv run python -m unittest discover -s tests
+```
 
 ## Run
 
@@ -90,7 +98,7 @@ tools:
   resource_api_fallback: true
 ```
 
-Set `tools.resource_api_fallback` to `false` to hide `list_units`, `read_unit`, and `read_unit_definition` when the harness provides equivalent model-controlled Resource access. Native MCP Resources remain exposed, and `list_unit_types` remains available.
+Set `tools.resource_api_fallback` to `false` only when the harness provides equivalent model-controlled Resource discovery, sub-resource/template discovery, and reading. Native MCP Resources remain exposed, and `list_unit_types` remains available.
 
 A different configuration file can be selected explicitly:
 
