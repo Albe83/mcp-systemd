@@ -66,12 +66,16 @@ Run the lightweight functional test suite with:
 uv run python -m unittest discover -s tests
 ```
 
+A manual-only GitHub Actions workflow named `CI` runs the locked install, functional tests, and semantic-eval validation in a clean environment. It is not triggered by pushes or pull requests.
+
 ## Run
 
 ```bash
-uv sync
+uv sync --locked
 uv run mcp-systemd
 ```
+
+Runtime dependencies are committed in `uv.lock`.
 
 The server uses FastMCP HTTP transport.
 
