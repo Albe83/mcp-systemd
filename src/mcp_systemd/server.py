@@ -1,4 +1,9 @@
+import argparse
+from pathlib import Path
+
 from fastmcp import FastMCP
+
+from mcp_systemd.config import DEFAULT_CONFIG_PATH, load_config
 
 mcp = FastMCP("mcp-systemd")
 
@@ -45,7 +50,17 @@ def user_unit(user: str, type: str, name: str) -> dict[str, object]:
 
 
 def main() -> None:
-    mcp.run(transport="http", host="127.0.0.1", port=48000)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help=f"configuration file (default: {DEFAULT_CONFIG_PATH})",
+    )
+    args = parser.parse_args()
+
+    config = load_config(args.config)
+    mcp.run(transport="http", host=config.host, port=config.port)
 
 
 if __name__ == "__main__":

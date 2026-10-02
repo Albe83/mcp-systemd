@@ -24,6 +24,7 @@ Specifically:
 - the server binds to the loopback interface by default;
 - it does not listen on external network interfaces unless explicitly configured to do so;
 - a high, non-common port (`48000`) is used as the project default;
+- host and port may be overridden explicitly through the YAML configuration;
 - broader network exposure must be an explicit operator decision.
 
 ## Consequences

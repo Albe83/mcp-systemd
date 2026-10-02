@@ -5,6 +5,7 @@ description = "Semantic MCP interface for systemd"
 requires-python = ">=3.10"
 dependencies = [
     "fastmcp>=4.0.10,<5",
+    "PyYAML>=6.0,<7",
 ]
 
 [project.scripts]
