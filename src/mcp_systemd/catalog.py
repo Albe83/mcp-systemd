@@ -48,7 +48,6 @@ class UnitRecord:
 
     def content(self) -> dict[str, str]:
         return {
-            "name": self.name,
             "description": self.description,
         }
 
