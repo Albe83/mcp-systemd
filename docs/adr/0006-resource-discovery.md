@@ -42,9 +42,23 @@ For the initial interface, reading a unit resource returns only:
 
 ```json
 {
-  "name": "sshd",
   "description": "OpenSSH server daemon"
 }
+```
+
+The unit name is deliberately not repeated in the resource payload. The URI already identifies the resource, including manager scope, unit type, and semantic unit name. Repeating identity fields in the content would consume model context without adding information.
+
+This establishes a general separation:
+
+```text
+URI
+    -> resource identity
+
+resource metadata
+    -> discovery hints
+
+resource content
+    -> properties of the identified resource
 ```
 
 The resource payload will be expanded incrementally as the interface is designed and validated.
@@ -53,5 +67,6 @@ The resource payload will be expanded incrementally as the interface is designed
 
 - Resource discovery has a clear systemd analogue without exposing every installed unit file.
 - `resources/list` remains lightweight and suitable for catalog/discovery use.
+- Resource content does not duplicate identity already encoded in the URI.
 - Resource content starts deliberately small and can evolve based on observed model needs.
 - Discovery of user managers is an implementation concern that can be refined later without changing the URI or resource-content contract.
