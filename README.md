@@ -20,4 +20,4 @@ uv sync
 uv run mcp-systemd
 ```
 
-The server uses FastMCP HTTP transport by default and listens on `0.0.0.0:8000`.
+The server uses FastMCP HTTP transport by default and listens only on `127.0.0.1:48000`.
