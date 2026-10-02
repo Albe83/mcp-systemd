@@ -42,6 +42,18 @@ Two small tools make the resource model explicitly discoverable by models:
 
 The tools are for discovery and introspection. Unit resources remain the canonical object representation.
 
+## Semantic evaluations
+
+The `evals/` directory contains repeatable model-facing evaluation cases for discovery, state inspection, unit definitions, unsupported capabilities, and token-efficient behavior.
+
+Validate the corpus with:
+
+```bash
+uv run python evals/validate.py
+```
+
+See `evals/README.md` for the case format and execution protocol.
+
 ## Run
 
 ```bash
