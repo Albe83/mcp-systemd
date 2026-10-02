@@ -15,7 +15,7 @@ cases:
         semantics:
           - reports the available service units
     forbidden:
-      calls:
+      interactions:
         - kind: tool
           name: list_unit_types
       answer:
@@ -39,7 +39,7 @@ cases:
         semantics:
           - reports units known on the host
     forbidden:
-      calls: []
+      interactions: []
       answer:
         semantics: []
     notes: |
@@ -62,7 +62,7 @@ cases:
         semantics:
           - reports services belonging to testuser's service manager
     forbidden:
-      calls: []
+      interactions: []
       answer:
         semantics: []
     notes: |
