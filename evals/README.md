@@ -72,6 +72,16 @@ or a resource read:
   uri: systemd://system/unit/service/sshd
 ```
 
+## Validate the suite
+
+Validate case structure and duplicate IDs before running evaluations:
+
+```bash
+uv run python evals/validate.py
+```
+
+The validator checks structure only. Semantic expectations are intentionally reviewed against the observed model trace and answer.
+
 ## Execution protocol
 
 Run the same cases against the same server fixture when comparing models or interface revisions.
