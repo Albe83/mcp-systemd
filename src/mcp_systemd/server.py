@@ -2,6 +2,8 @@ from fastmcp import FastMCP
 
 mcp = FastMCP("mcp-systemd")
 
+SUPPORTED_TYPES = {"service", "timer"}
+
 
 def _mock_unit(
     *,
@@ -10,6 +12,9 @@ def _mock_unit(
     name: str,
     user: str | None = None,
 ) -> dict[str, object]:
+    if unit_type not in SUPPORTED_TYPES:
+        raise ValueError(f"Unsupported unit type: {unit_type}")
+
     unit: dict[str, object] = {
         "name": name,
         "type": unit_type,
@@ -27,28 +32,16 @@ def _mock_unit(
     return unit
 
 
-@mcp.resource("systemd://unit/system/service/{name}")
-def system_service(name: str) -> dict[str, object]:
-    """Return a mock system-scoped service."""
-    return _mock_unit(scope="system", unit_type="service", name=name)
+@mcp.resource("systemd://unit/system/{type}/{name}")
+def system_unit(type: str, name: str) -> dict[str, object]:
+    """Return a mock system-scoped unit."""
+    return _mock_unit(scope="system", unit_type=type, name=name)
 
 
-@mcp.resource("systemd://unit/system/timer/{name}")
-def system_timer(name: str) -> dict[str, object]:
-    """Return a mock system-scoped timer."""
-    return _mock_unit(scope="system", unit_type="timer", name=name)
-
-
-@mcp.resource("systemd://unit/user/{user}/service/{name}")
-def user_service(user: str, name: str) -> dict[str, object]:
-    """Return a mock user-scoped service."""
-    return _mock_unit(scope="user", unit_type="service", name=name, user=user)
-
-
-@mcp.resource("systemd://unit/user/{user}/timer/{name}")
-def user_timer(user: str, name: str) -> dict[str, object]:
-    """Return a mock user-scoped timer."""
-    return _mock_unit(scope="user", unit_type="timer", name=name, user=user)
+@mcp.resource("systemd://unit/user/{user}/{type}/{name}")
+def user_unit(user: str, type: str, name: str) -> dict[str, object]:
+    """Return a mock user-scoped unit."""
+    return _mock_unit(scope="user", unit_type=type, name=name, user=user)
 
 
 def main() -> None:
