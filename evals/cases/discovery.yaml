@@ -5,15 +5,16 @@ cases:
       - token-efficiency
       - type-filter
     prompt: |
-      Which systemd services are available?
+      Which systemd services are available in the system manager?
     expected:
       required:
         - kind: unit_discovery
+          scope: system
           type: service
       acceptable: []
       answer:
         semantics:
-          - reports the available service units
+          - reports the available system-manager service units
     forbidden:
       interactions:
         - kind: tool
@@ -25,19 +26,20 @@ cases:
       list_units or by harness-native Resource discovery. Calling
       list_unit_types adds no decision value.
 
-  - id: discover-units
+  - id: discover-system-units
     category: discovery
     tags:
       - token-efficiency
     prompt: |
-      Which systemd units are currently known?
+      Which systemd units are currently known by the system manager?
     expected:
       required:
         - kind: unit_discovery
+          scope: system
       acceptable: []
       answer:
         semantics:
-          - reports units known on the host
+          - reports units known by the system service manager
     forbidden:
       interactions: []
       answer:
@@ -55,6 +57,7 @@ cases:
     expected:
       required:
         - kind: unit_discovery
+          scope: user
           type: service
           user: testuser
       acceptable: []
