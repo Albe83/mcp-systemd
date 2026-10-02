@@ -6,23 +6,53 @@ import yaml
 
 CASES_DIR = Path(__file__).parent / "cases"
 CATEGORIES = {"discovery", "state", "definition", "negative"}
-CALL_KINDS = {"tool", "resource"}
+INTERACTION_KINDS = {"tool", "resource", "unit_discovery"}
 
 
 def fail(message: str) -> None:
     raise ValueError(message)
 
 
-def validate_call(call: dict, case_id: str) -> None:
-    kind = call.get("kind")
-    if kind not in CALL_KINDS:
-        fail(f"{case_id}: invalid call kind {kind!r}")
+def require_list(value: object, label: str, case_id: str) -> list:
+    if not isinstance(value, list):
+        fail(f"{case_id}: {label} must be a list")
+    return value
 
-    if kind == "tool" and not call.get("name"):
-        fail(f"{case_id}: tool call requires name")
 
-    if kind == "resource" and not call.get("uri"):
-        fail(f"{case_id}: resource call requires uri")
+def validate_interaction(interaction: object, case_id: str) -> None:
+    if not isinstance(interaction, dict):
+        fail(f"{case_id}: interaction must be an object")
+
+    kind = interaction.get("kind")
+    if kind not in INTERACTION_KINDS:
+        fail(f"{case_id}: invalid interaction kind {kind!r}")
+
+    if kind == "tool":
+        if not isinstance(interaction.get("name"), str) or not interaction["name"]:
+            fail(f"{case_id}: tool interaction requires name")
+        arguments = interaction.get("arguments", {})
+        if not isinstance(arguments, dict):
+            fail(f"{case_id}: tool arguments must be an object")
+
+    if kind == "resource":
+        if not isinstance(interaction.get("uri"), str) or not interaction["uri"]:
+            fail(f"{case_id}: resource interaction requires uri")
+
+    if kind == "unit_discovery":
+        unit_type = interaction.get("type")
+        user = interaction.get("user")
+        if unit_type is not None and (
+            not isinstance(unit_type, str) or not unit_type
+        ):
+            fail(f"{case_id}: unit discovery type must be a non-empty string")
+        if user is not None and (not isinstance(user, str) or not user):
+            fail(f"{case_id}: unit discovery user must be a non-empty string")
+
+
+def validate_semantics(value: object, label: str, case_id: str) -> None:
+    semantics = require_list(value, label, case_id)
+    if not all(isinstance(item, str) and item for item in semantics):
+        fail(f"{case_id}: {label} entries must be non-empty strings")
 
 
 def validate_case(case: dict, seen_ids: set[str]) -> None:
@@ -36,18 +66,54 @@ def validate_case(case: dict, seen_ids: set[str]) -> None:
     if case.get("category") not in CATEGORIES:
         fail(f"{case_id}: invalid category")
 
+    tags = case.get("tags", [])
+    if not isinstance(tags, list) or not all(
+        isinstance(tag, str) and tag for tag in tags
+    ):
+        fail(f"{case_id}: tags must be a list of non-empty strings")
+
     if not isinstance(case.get("prompt"), str) or not case["prompt"].strip():
         fail(f"{case_id}: prompt must be non-empty")
 
     expected = case.get("expected", {})
     forbidden = case.get("forbidden", {})
+    if not isinstance(expected, dict):
+        fail(f"{case_id}: expected must be an object")
+    if not isinstance(forbidden, dict):
+        fail(f"{case_id}: forbidden must be an object")
 
-    for call in expected.get("required", []):
-        validate_call(call, case_id)
-    for call in expected.get("acceptable", []):
-        validate_call(call, case_id)
-    for call in forbidden.get("calls", []):
-        validate_call(call, case_id)
+    for interaction in require_list(
+        expected.get("required", []), "expected.required", case_id
+    ):
+        validate_interaction(interaction, case_id)
+
+    for interaction in require_list(
+        expected.get("acceptable", []), "expected.acceptable", case_id
+    ):
+        validate_interaction(interaction, case_id)
+
+    for interaction in require_list(
+        forbidden.get("calls", []), "forbidden.calls", case_id
+    ):
+        validate_interaction(interaction, case_id)
+
+    expected_answer = expected.get("answer", {})
+    forbidden_answer = forbidden.get("answer", {})
+    if not isinstance(expected_answer, dict):
+        fail(f"{case_id}: expected.answer must be an object")
+    if not isinstance(forbidden_answer, dict):
+        fail(f"{case_id}: forbidden.answer must be an object")
+
+    validate_semantics(
+        expected_answer.get("semantics", []),
+        "expected.answer.semantics",
+        case_id,
+    )
+    validate_semantics(
+        forbidden_answer.get("semantics", []),
+        "forbidden.answer.semantics",
+        case_id,
+    )
 
 
 def main() -> int:
