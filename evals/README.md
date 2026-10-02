@@ -10,7 +10,7 @@ For each case, capture:
 
 1. tool calls and arguments;
 2. resource discovery and reads;
-3. unnecessary calls or reads;
+3. unnecessary interactions;
 4. final answer;
 5. whether the model inferred unsupported capabilities.
 
@@ -54,7 +54,7 @@ cases:
         semantics: []
 
     forbidden:
-      calls: []
+      interactions: []
       answer:
         semantics: []
 
@@ -100,6 +100,6 @@ Run the same cases against the same server fixture when comparing models or inte
 
 Do not add instructions to the model that reveal the expected MCP path. Submit only the case `prompt` plus the normal harness/system instructions.
 
-Record the model, harness, server revision, fallback configuration, and result using `result-template.yaml`.
+Record the model, harness, server revision, fallback configuration, observed interactions, and result using `result-template.yaml`.
 
 The suite is expected to evolve with the interface. Any new model-facing capability should add or update semantic eval cases that demonstrate when it should be used, when it should not be used, and what decision it enables.
