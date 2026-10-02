@@ -2,17 +2,16 @@
 
 Experimental semantic MCP interface for systemd.
 
-This first version is intentionally a **mock**: it exposes service and timer resources but does not talk to systemd or perform any action.
+This first version is intentionally a **mock**: it exposes systemd unit resources but does not talk to systemd or perform any action.
 
 ## Resource templates
 
 ```text
-systemd://unit/system/service/{name}
-systemd://unit/system/timer/{name}
-
-systemd://unit/user/{user}/service/{name}
-systemd://unit/user/{user}/timer/{name}
+systemd://unit/system/{type}/{name}
+systemd://unit/user/{user}/{type}/{name}
 ```
+
+The initial mock supports `service` and `timer` as unit types.
 
 ## Run
 
