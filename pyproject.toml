@@ -1,0 +1,15 @@
+[project]
+name = "mcp-systemd"
+version = "0.1.0"
+description = "Semantic MCP interface for systemd"
+requires-python = ">=3.10"
+dependencies = [
+    "fastmcp>=4.0.10,<5",
+]
+
+[project.scripts]
+mcp-systemd = "mcp_systemd.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
