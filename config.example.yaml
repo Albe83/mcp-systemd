@@ -3,4 +3,7 @@ server:
   port: 48000
 
 tools:
-  resource_api_fallback: true
+  groups:
+    resource_api_fallback: true
+  enable: []
+  disable: []

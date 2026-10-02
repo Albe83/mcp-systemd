@@ -1,16 +1,102 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Mapping
 
 import yaml
 
 DEFAULT_CONFIG_PATH = Path("/etc/mcp-systemd/config.yaml")
+
+DEFAULT_TOOL_GROUPS = {
+    "resource_api_fallback": True,
+}
+
+
+@dataclass(frozen=True)
+class ToolExposureConfig:
+    groups: Mapping[str, bool] = field(
+        default_factory=lambda: dict(DEFAULT_TOOL_GROUPS)
+    )
+    enable: frozenset[str] = frozenset()
+    disable: frozenset[str] = frozenset()
+
+    def is_enabled(
+        self,
+        name: str,
+        *,
+        groups: frozenset[str] = frozenset(),
+    ) -> bool:
+        if name in self.disable:
+            return False
+
+        if name in self.enable:
+            return True
+
+        for group in groups:
+            if group not in self.groups:
+                raise ValueError(f"Unknown tool group: {group}")
+
+            if not self.groups[group]:
+                return False
+
+        return True
 
 
 @dataclass(frozen=True)
 class ServerConfig:
     host: str = "127.0.0.1"
     port: int = 48000
-    resource_api_fallback: bool = True
+    tools: ToolExposureConfig = field(default_factory=ToolExposureConfig)
+
+
+def _parse_tool_names(value: object, field_name: str) -> frozenset[str]:
+    if not isinstance(value, list):
+        raise ValueError(f"tools.{field_name} must be a list")
+
+    if not all(isinstance(name, str) and name for name in value):
+        raise ValueError(
+            f"tools.{field_name} must contain non-empty tool names"
+        )
+
+    return frozenset(value)
+
+
+def _parse_tool_exposure(tools: dict) -> ToolExposureConfig:
+    allowed_keys = {"groups", "enable", "disable"}
+    unknown_keys = set(tools) - allowed_keys
+    if unknown_keys:
+        names = ", ".join(sorted(unknown_keys))
+        raise ValueError(f"Unknown tools configuration: {names}")
+
+    configured_groups = tools.get("groups", {})
+    if not isinstance(configured_groups, dict):
+        raise ValueError("tools.groups must be a mapping")
+
+    unknown_groups = set(configured_groups) - set(DEFAULT_TOOL_GROUPS)
+    if unknown_groups:
+        names = ", ".join(sorted(unknown_groups))
+        raise ValueError(f"Unknown tool group: {names}")
+
+    if not all(isinstance(value, bool) for value in configured_groups.values()):
+        raise ValueError("tools.groups values must be booleans")
+
+    groups = dict(DEFAULT_TOOL_GROUPS)
+    groups.update(configured_groups)
+
+    enable = _parse_tool_names(tools.get("enable", []), "enable")
+    disable = _parse_tool_names(tools.get("disable", []), "disable")
+
+    overlap = enable & disable
+    if overlap:
+        names = ", ".join(sorted(overlap))
+        raise ValueError(
+            f"tools.enable and tools.disable overlap: {names}"
+        )
+
+    return ToolExposureConfig(
+        groups=groups,
+        enable=enable,
+        disable=disable,
+    )
 
 
 def load_config(path: Path) -> ServerConfig:
@@ -34,10 +120,6 @@ def load_config(path: Path) -> ServerConfig:
 
     host = server.get("host", ServerConfig.host)
     port = server.get("port", ServerConfig.port)
-    resource_api_fallback = tools.get(
-        "resource_api_fallback",
-        ServerConfig.resource_api_fallback,
-    )
 
     if not isinstance(host, str) or not host:
         raise ValueError("server.host must be a non-empty string")
@@ -49,11 +131,8 @@ def load_config(path: Path) -> ServerConfig:
     ):
         raise ValueError("server.port must be an integer between 1 and 65535")
 
-    if not isinstance(resource_api_fallback, bool):
-        raise ValueError("tools.resource_api_fallback must be a boolean")
-
     return ServerConfig(
         host=host,
         port=port,
-        resource_api_fallback=resource_api_fallback,
+        tools=_parse_tool_exposure(tools),
     )

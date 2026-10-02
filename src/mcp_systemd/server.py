@@ -15,7 +15,7 @@ def build_server(config: ServerConfig | None = None) -> FastMCP:
     register_resources(mcp)
     register_tools(
         mcp,
-        resource_api_fallback=config.resource_api_fallback,
+        exposure=config.tools,
     )
     return mcp
 
