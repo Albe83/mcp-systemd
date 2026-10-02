@@ -7,10 +7,8 @@ def register_tools(mcp: FastMCP) -> None:
     @mcp.tool(
         name="list_units",
         description=(
-            "List systemd units currently known by the service manager. "
-            "This is the model-controlled discovery view of the same catalog exposed "
-            "through resources/list, logically equivalent to systemctl list-units --all "
-            "and restricted to the unit types supported by this server."
+            "List systemd units known by the service manager. "
+            "Use this to discover units or find one when its exact name is unknown."
         ),
     )
     def list_units() -> dict[str, list[dict[str, str]]]:
@@ -21,9 +19,8 @@ def register_tools(mcp: FastMCP) -> None:
     @mcp.tool(
         name="list_unit_types",
         description=(
-            "List the systemd unit types supported by this server and explain what each "
-            "type represents. Use this to understand valid unit types before discovering "
-            "or addressing unit resources."
+            "List supported systemd unit types and what they represent. "
+            "Use this when you need to identify or understand a unit type."
         ),
     )
     def list_unit_types() -> dict[str, list[dict[str, str]]]:
