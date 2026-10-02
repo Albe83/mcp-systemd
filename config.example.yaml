@@ -1,3 +1,6 @@
 server:
   host: 127.0.0.1
   port: 48000
+
+tools:
+  resource_api_fallback: true
