@@ -1,0 +1,14 @@
+run:
+  date: YYYY-MM-DD
+  model: ""
+  harness: ""
+  server_revision: ""
+  notes: ""
+
+results:
+  - id: case-id
+    rating: pass | acceptable | fail
+    observed:
+      calls: []
+      answer: ""
+    notes: ""
