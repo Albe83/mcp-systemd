@@ -50,6 +50,17 @@ tools:
             with self.assertRaisesRegex(ValueError, "tools must be a mapping"):
                 load_config(path)
 
+    def test_rejects_boolean_port(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "config.yaml"
+            path.write_text("server:\n  port: true\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(
+                ValueError,
+                "server.port must be an integer between 1 and 65535",
+            ):
+                load_config(path)
+
 
 if __name__ == "__main__":
     unittest.main()
