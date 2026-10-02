@@ -9,21 +9,29 @@ This first version is intentionally a **mock**: it exposes systemd unit resource
 ```text
 systemd://system/unit/{type}/{name}
 systemd://user/{user}/unit/{type}/{name}
+
+systemd://system/unit/{type}/{name}/definition
+systemd://user/{user}/unit/{type}/{name}/definition
 ```
 
 The initial mock supports `service` and `timer` as unit types.
 
 `resources/list` exposes a mock catalog representing the logical equivalent of `systemctl list-units --all`, restricted to the supported unit types.
 
-Reading a unit resource currently returns only:
+Reading a unit resource returns compact runtime state:
 
 ```json
 {
-  "description": "OpenSSH server daemon"
+  "description": "OpenSSH server daemon",
+  "load_state": "loaded",
+  "active_state": "active",
+  "sub_state": "running"
 }
 ```
 
 The URI carries the unit identity, so the payload does not repeat the unit name.
+
+The `/definition` sub-resource returns the unit file and drop-ins as text. It is separate because configuration content can be much larger and is not needed for most state-oriented decisions.
 
 ## Discovery tools
 

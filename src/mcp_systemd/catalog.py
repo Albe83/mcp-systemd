@@ -34,6 +34,10 @@ class UnitRecord:
     type: str
     name: str
     description: str
+    load_state: str
+    active_state: str
+    sub_state: str
+    definition: str
     user: str | None = None
 
     @property
@@ -49,6 +53,9 @@ class UnitRecord:
     def content(self) -> dict[str, str]:
         return {
             "description": self.description,
+            "load_state": self.load_state,
+            "active_state": self.active_state,
+            "sub_state": self.sub_state,
         }
 
     def discovery(self) -> dict[str, str]:
@@ -65,18 +72,45 @@ MOCK_UNITS = (
         type="service",
         name="sshd",
         description="OpenSSH server daemon",
+        load_state="loaded",
+        active_state="active",
+        sub_state="running",
+        definition="""[Unit]
+Description=OpenSSH server daemon
+
+[Service]
+ExecStart=/usr/sbin/sshd -D
+""",
     ),
     UnitRecord(
         scope="system",
         type="service",
         name="systemd-journald",
         description="Journal Service",
+        load_state="loaded",
+        active_state="active",
+        sub_state="running",
+        definition="""[Unit]
+Description=Journal Service
+
+[Service]
+ExecStart=/usr/lib/systemd/systemd-journald
+""",
     ),
     UnitRecord(
         scope="system",
         type="timer",
         name="systemd-tmpfiles-clean",
         description="Daily Cleanup of Temporary Directories",
+        load_state="loaded",
+        active_state="active",
+        sub_state="waiting",
+        definition="""[Unit]
+Description=Daily Cleanup of Temporary Directories
+
+[Timer]
+OnCalendar=daily
+""",
     ),
     UnitRecord(
         scope="user",
@@ -84,6 +118,15 @@ MOCK_UNITS = (
         type="service",
         name="example-agent",
         description="Example user service",
+        load_state="loaded",
+        active_state="failed",
+        sub_state="failed",
+        definition="""[Unit]
+Description=Example user service
+
+[Service]
+ExecStart=/usr/bin/example-agent
+""",
     ),
 )
 
