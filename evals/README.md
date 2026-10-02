@@ -9,7 +9,7 @@ The goal is not only to verify that a model reaches a correct final answer. The 
 For each case, capture:
 
 1. tool calls and arguments;
-2. resource reads;
+2. resource discovery and reads;
 3. unnecessary calls or reads;
 4. final answer;
 5. whether the model inferred unsupported capabilities.
@@ -20,7 +20,11 @@ The expected trace is intentionally not always unique. A case can define:
 - `acceptable`: behavior that is not necessary but is still valid;
 - `forbidden`: behavior that indicates semantic confusion, wasted context, or invented capability.
 
-A `kind: resource` expectation is semantic rather than harness-specific. It means that the model must cause that Resource view to be read. A harness may realize this through native MCP Resource access or through mcp-systemd semantic fallback tools such as `read_unit` and `read_unit_definition`.
+Semantic interactions are intentionally harness-agnostic:
+
+- `kind: unit_discovery` means the model must cause discovery of the relevant unit Resources. This may be realized through `list_units`, native `resources/list`, or an equivalent harness projection.
+- `kind: resource` means the model must cause that Resource view to be read. This may be realized through native MCP Resource access or through mcp-systemd semantic fallback tools such as `read_unit` and `read_unit_definition`.
+- `kind: tool` is used only when the specific tool choice itself is part of the semantic expectation.
 
 ## Rating
 
@@ -58,16 +62,22 @@ cases:
       Human explanation of what the case is testing.
 ```
 
-A call can be a tool call:
+A concrete tool expectation:
 
 ```yaml
 - kind: tool
-  name: list_units
-  arguments:
-    type: service
+  name: list_unit_types
 ```
 
-or a resource read:
+Semantic unit discovery:
+
+```yaml
+- kind: unit_discovery
+  type: service
+  user: testuser
+```
+
+A Resource read:
 
 ```yaml
 - kind: resource
@@ -90,6 +100,6 @@ Run the same cases against the same server fixture when comparing models or inte
 
 Do not add instructions to the model that reveal the expected MCP path. Submit only the case `prompt` plus the normal harness/system instructions.
 
-Record the model, harness, server revision, and result using `result-template.yaml`.
+Record the model, harness, server revision, fallback configuration, and result using `result-template.yaml`.
 
 The suite is expected to evolve with the interface. Any new model-facing capability should add or update semantic eval cases that demonstrate when it should be used, when it should not be used, and what decision it enables.
