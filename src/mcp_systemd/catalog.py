@@ -171,6 +171,12 @@ def find_unit(
     if unit_type not in SUPPORTED_TYPES:
         raise ValueError(f"Unsupported unit type: {unit_type}")
 
+    if scope == "system" and user is not None:
+        raise ValueError("system scope cannot specify a user")
+
+    if scope == "user" and not user:
+        raise ValueError("user scope requires a user")
+
     for unit in MOCK_UNITS:
         if (
             unit.scope == scope
@@ -192,23 +198,27 @@ def find_unit_by_uri(uri: str) -> UnitRecord:
 
     if parsed.netloc == "system" and len(parts) == 3 and parts[0] == "unit":
         _, unit_type, name = parts
-        return find_unit(
+        unit = find_unit(
             scope="system",
             unit_type=unit_type,
             name=name,
         )
-
-    if (
+    elif (
         parsed.netloc == "user"
         and len(parts) == 4
         and parts[1] == "unit"
     ):
         user, _, unit_type, name = parts
-        return find_unit(
+        unit = find_unit(
             scope="user",
             user=user,
             unit_type=unit_type,
             name=name,
         )
+    else:
+        raise ValueError("Invalid unit resource URI")
 
-    raise ValueError("Invalid unit resource URI")
+    if unit.uri != uri:
+        raise ValueError("Unit resource URI must be canonical")
+
+    return unit
