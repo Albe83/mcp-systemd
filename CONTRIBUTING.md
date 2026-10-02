@@ -33,6 +33,17 @@ fix/user-scope-resolution
 docs/resource-model
 ```
 
+## Checks
+
+Before opening or merging a pull request, run:
+
+```bash
+uv run python -m unittest discover -s tests
+uv run python evals/validate.py
+```
+
+Functional tests protect code-level contracts. Semantic evals remain a separate model-facing corpus and are not replaced by functional tests.
+
 ## Commit messages
 
 Use a Conventional Commits style:
