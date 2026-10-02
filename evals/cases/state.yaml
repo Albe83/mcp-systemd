@@ -12,6 +12,7 @@ cases:
           uri: systemd://system/unit/service/sshd
       acceptable:
         - kind: unit_discovery
+          scope: system
           type: service
       answer:
         semantics:
@@ -38,6 +39,7 @@ cases:
           uri: systemd://system/unit/timer/systemd-tmpfiles-clean
       acceptable:
         - kind: unit_discovery
+          scope: system
           type: timer
       answer:
         semantics:
@@ -65,6 +67,7 @@ cases:
           uri: systemd://user/testuser/unit/service/example-agent
       acceptable:
         - kind: unit_discovery
+          scope: user
           type: service
           user: testuser
       answer:
