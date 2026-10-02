@@ -45,7 +45,7 @@ def user_unit(user: str, type: str, name: str) -> dict[str, object]:
 
 
 def main() -> None:
-    mcp.run(transport="http", host="0.0.0.0", port=8000)
+    mcp.run(transport="http", host="127.0.0.1", port=48000)
 
 
 if __name__ == "__main__":
