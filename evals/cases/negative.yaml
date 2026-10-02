@@ -13,7 +13,7 @@ cases:
         semantics:
           - states that the exposed MCP capabilities cannot restart the unit
     forbidden:
-      calls:
+      interactions:
         - kind: tool
           name: restart
         - kind: tool
@@ -39,7 +39,7 @@ cases:
         semantics:
           - states that the exposed MCP capabilities cannot enable the unit
     forbidden:
-      calls: []
+      interactions: []
       answer:
         semantics:
           - claims that sshd was enabled
@@ -63,7 +63,7 @@ cases:
         semantics:
           - recognizes sshd as active
     forbidden:
-      calls:
+      interactions:
         - kind: resource
           uri: systemd://system/unit/service/sshd/definition
       answer:
