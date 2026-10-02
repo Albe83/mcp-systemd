@@ -1,0 +1,50 @@
+cases:
+  - id: sshd-definition
+    category: definition
+    tags:
+      - definition
+      - configuration
+    prompt: |
+      Show me how sshd is configured.
+    expected:
+      required:
+        - kind: resource
+          uri: systemd://system/unit/service/sshd/definition
+      acceptable:
+        - kind: resource
+          uri: systemd://system/unit/service/sshd
+        - kind: tool
+          name: list_units
+          arguments:
+            type: service
+      answer:
+        semantics:
+          - explains the relevant unit definition
+    forbidden:
+      calls: []
+      answer:
+        semantics: []
+    notes: |
+      The definition sub-resource is the semantic view needed for a configuration question.
+
+  - id: timer-definition
+    category: definition
+    tags:
+      - timer
+      - definition
+    prompt: |
+      How is systemd-tmpfiles-clean scheduled?
+    expected:
+      required:
+        - kind: resource
+          uri: systemd://system/unit/timer/systemd-tmpfiles-clean/definition
+      acceptable: []
+      answer:
+        semantics:
+          - identifies the scheduling directive from the unit definition
+    forbidden:
+      calls: []
+      answer:
+        semantics: []
+    notes: |
+      Runtime state alone cannot explain how the timer is configured.
