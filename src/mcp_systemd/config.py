@@ -20,6 +20,9 @@ def load_config(path: Path) -> ServerConfig:
     with path.open("r", encoding="utf-8") as file:
         data = yaml.safe_load(file) or {}
 
+    if not isinstance(data, dict):
+        raise ValueError("configuration root must be a mapping")
+
     server = data.get("server", {})
     tools = data.get("tools", {})
 
