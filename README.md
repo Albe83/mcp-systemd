@@ -24,6 +24,15 @@ Reading a unit resource currently returns only:
 }
 ```
 
+## Discovery tools
+
+Two small tools make the resource model explicitly discoverable by models:
+
+- `list_units` exposes the same unit catalog as `resources/list`;
+- `list_unit_types` lists the supported unit types and their semantic descriptions.
+
+The tools are for discovery and introspection. Unit resources remain the canonical object representation.
+
 ## Run
 
 ```bash
