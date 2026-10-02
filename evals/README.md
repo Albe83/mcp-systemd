@@ -20,6 +20,8 @@ The expected trace is intentionally not always unique. A case can define:
 - `acceptable`: behavior that is not necessary but is still valid;
 - `forbidden`: behavior that indicates semantic confusion, wasted context, or invented capability.
 
+A `kind: resource` expectation is semantic rather than harness-specific. It means that the model must cause that Resource view to be read. A harness may realize this through native MCP Resource access or through mcp-systemd semantic fallback tools such as `read_unit` and `read_unit_definition`.
+
 ## Rating
 
 Use one overall rating per case:
