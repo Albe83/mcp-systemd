@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10
+        with:
+          version: "0.12.22"
+          enable-cache: true
+
+      - name: Sync locked environment
+        run: uv sync --locked
+
+      - name: Run functional tests
+        run: uv run python -m unittest discover -s tests
+
+      - name: Validate semantic eval corpus
+        run: uv run python evals/validate.py
