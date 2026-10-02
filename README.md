@@ -44,7 +44,50 @@ The server exposes semantic tools that make the Resource model usable even when 
 
 `read_unit` and `read_unit_definition` both accept the canonical base unit Resource URI. The model does not need to construct sub-resource URIs.
 
-The Resources remain canonical. The first three tools are a semantic fallback and can be disabled when the deployment harness already gives the model equivalent access to concrete Resource discovery, Resource Templates or equivalent sub-resource discovery, and Resource reading.
+The Resources remain canonical. The first three tools are a semantic fallback and belong to the `resource_api_fallback` exposure group.
+
+## Tool exposure
+
+Tool exposure is configured independently from MCP Tool Annotations.
+
+Each tool can belong to zero or more exposure groups. Groups act as feature flags for the model-facing tool surface, and individual tools can be enabled or disabled as explicit overrides.
+
+Example:
+
+```yaml
+tools:
+  groups:
+    resource_api_fallback: true
+
+  enable: []
+  disable: []
+```
+
+The default `resource_api_fallback` group contains:
+
+```text
+list_units
+read_unit
+read_unit_definition
+```
+
+Set the group to `false` when the harness already provides equivalent model-controlled Resource discovery, sub-resource/template discovery, and reading.
+
+An explicit per-tool override takes precedence over group membership:
+
+```yaml
+tools:
+  groups:
+    resource_api_fallback: false
+
+  enable:
+    - read_unit
+
+  disable:
+    - list_unit_types
+```
+
+A tool cannot appear in both `enable` and `disable`.
 
 ## Semantic evaluations
 
@@ -89,7 +132,7 @@ The default configuration path is:
 /etc/mcp-systemd/config.yaml
 ```
 
-If the file does not exist, the secure defaults are used.
+If the file does not exist, the defaults are used.
 
 Example:
 
@@ -99,10 +142,11 @@ server:
   port: 48000
 
 tools:
-  resource_api_fallback: true
+  groups:
+    resource_api_fallback: true
+  enable: []
+  disable: []
 ```
-
-Set `tools.resource_api_fallback` to `false` only when the harness provides equivalent model-controlled Resource discovery, sub-resource/template discovery, and reading. Native MCP Resources remain exposed, and `list_unit_types` remains available.
 
 A different configuration file can be selected explicitly:
 
