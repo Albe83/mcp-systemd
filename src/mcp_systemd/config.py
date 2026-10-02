@@ -42,7 +42,11 @@ def load_config(path: Path) -> ServerConfig:
     if not isinstance(host, str) or not host:
         raise ValueError("server.host must be a non-empty string")
 
-    if not isinstance(port, int) or not 1 <= port <= 65535:
+    if (
+        isinstance(port, bool)
+        or not isinstance(port, int)
+        or not 1 <= port <= 65535
+    ):
         raise ValueError("server.port must be an integer between 1 and 65535")
 
     if not isinstance(resource_api_fallback, bool):
