@@ -8,10 +8,8 @@ cases:
       Which systemd services are available?
     expected:
       required:
-        - kind: tool
-          name: list_units
-          arguments:
-            type: service
+        - kind: unit_discovery
+          type: service
       acceptable: []
       answer:
         semantics:
@@ -23,7 +21,9 @@ cases:
       answer:
         semantics: []
     notes: |
-      The requested unit type is already known. Calling list_unit_types adds no decision value.
+      The requested unit type is already known. Discovery may be realized by
+      list_units or by harness-native Resource discovery. Calling
+      list_unit_types adds no decision value.
 
   - id: discover-units
     category: discovery
@@ -33,13 +33,11 @@ cases:
       Which systemd units are currently known?
     expected:
       required:
-        - kind: tool
-          name: list_units
-          arguments: {}
+        - kind: unit_discovery
       acceptable: []
       answer:
         semantics:
-          - reports units known by the system service manager
+          - reports units known on the host
     forbidden:
       calls: []
       answer:
@@ -56,11 +54,9 @@ cases:
       Which services does testuser have?
     expected:
       required:
-        - kind: tool
-          name: list_units
-          arguments:
-            type: service
-            user: testuser
+        - kind: unit_discovery
+          type: service
+          user: testuser
       acceptable: []
       answer:
         semantics:
@@ -70,4 +66,5 @@ cases:
       answer:
         semantics: []
     notes: |
-      Tests whether the user argument is sufficient to select the user manager without a scope parameter.
+      Tests whether user-scoped discovery is understood without depending on
+      the harness-specific mechanism used to enumerate Resources.
