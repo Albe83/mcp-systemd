@@ -3,12 +3,13 @@ from typing import Annotated
 from fastmcp import FastMCP
 from mcp.types import ToolAnnotations
 
-from mcp_systemd.catalog import (
-    find_unit_by_uri,
-    list_unit_records,
-    list_unit_type_records,
-)
 from mcp_systemd.config import ToolExposureConfig
+from mcp_systemd.domain.systemd import Systemd, list_unit_types
+from mcp_systemd.mcp_unit import (
+    parse_unit_uri,
+    unit_content,
+    unit_discovery,
+)
 
 
 READ_ONLY_CLOSED_WORLD = ToolAnnotations(
@@ -37,6 +38,7 @@ def _validate_tool_overrides(config: ToolExposureConfig) -> None:
 
 def register_tools(
     mcp: FastMCP,
+    systemd: Systemd,
     *,
     exposure: ToolExposureConfig | None = None,
 ) -> None:
@@ -55,7 +57,7 @@ def register_tools(
             ),
             annotations=READ_ONLY_CLOSED_WORLD,
         )
-        def list_units(
+        async def list_units_tool(
             type: Annotated[
                 str | None,
                 "Unit type; omit for all supported types.",
@@ -66,14 +68,15 @@ def register_tools(
             ] = None,
         ) -> dict[str, list[dict[str, str]]]:
             scope = "user" if user is not None else "system"
+            units = await systemd.list_units(
+                unit_type=type,
+                scope=scope,
+                user=user,
+            )
             return {
                 "units": [
-                    unit.discovery()
-                    for unit in list_unit_records(
-                        unit_type=type,
-                        scope=scope,
-                        user=user,
-                    )
+                    unit_discovery(unit)
+                    for unit in units
                 ],
             }
 
@@ -89,10 +92,11 @@ def register_tools(
             ),
             annotations=READ_ONLY_CLOSED_WORLD,
         )
-        def read_unit(
+        async def read_unit(
             uri: Annotated[str, "Base unit resource URI."],
         ) -> dict[str, str]:
-            return find_unit_by_uri(uri).content()
+            unit = await systemd.get_unit(parse_unit_uri(uri))
+            return unit_content(unit)
 
     if exposure.is_enabled(
         "read_unit_definition",
@@ -106,10 +110,12 @@ def register_tools(
             ),
             annotations=READ_ONLY_CLOSED_WORLD,
         )
-        def read_unit_definition(
+        async def read_unit_definition(
             uri: Annotated[str, "Base unit resource URI."],
         ) -> str:
-            return find_unit_by_uri(uri).definition
+            return await systemd.get_unit_definition(
+                parse_unit_uri(uri)
+            )
 
     if exposure.is_enabled(
         "list_unit_types",
@@ -123,13 +129,13 @@ def register_tools(
             ),
             annotations=READ_ONLY_CLOSED_WORLD,
         )
-        def list_unit_types() -> dict[str, list[dict[str, str]]]:
+        def list_unit_types_tool() -> dict[str, list[dict[str, str]]]:
             return {
                 "types": [
                     {
                         "name": unit_type.name,
                         "description": unit_type.description,
                     }
-                    for unit_type in list_unit_type_records()
+                    for unit_type in list_unit_types()
                 ],
             }
