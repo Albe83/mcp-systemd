@@ -13,3 +13,7 @@ SERVICE_UNIT_TYPE = UnitType(
 @dataclass(frozen=True)
 class ServiceUnit(Unit):
     """A systemd service unit."""
+
+    def __post_init__(self) -> None:
+        if self.ref.type != SERVICE_UNIT_TYPE.name:
+            raise ValueError("ServiceUnit requires a service UnitRef")
