@@ -78,6 +78,15 @@ class ServerSurfaceTests(unittest.IsolatedAsyncioTestCase):
                 )
             )
 
+    async def test_backend_can_be_injected_at_composition_root(self) -> None:
+        from mcp_systemd.backends.mock import MockSystemd
+
+        mcp = build_server(
+            ServerConfig(),
+            systemd=MockSystemd(units=(), definitions={}),
+        )
+        self.assertEqual(await mcp.list_resources(), [])
+
     async def test_resources_list_contains_base_units_from_multiple_managers(
         self,
     ) -> None:
