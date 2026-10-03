@@ -3,18 +3,26 @@ from pathlib import Path
 
 from fastmcp import FastMCP
 
+from mcp_systemd.backends.mock import MockSystemd
 from mcp_systemd.config import DEFAULT_CONFIG_PATH, ServerConfig, load_config
+from mcp_systemd.domain.systemd import Systemd
 from mcp_systemd.resources import register_resources
 from mcp_systemd.tools import register_tools
 
 
-def build_server(config: ServerConfig | None = None) -> FastMCP:
+def build_server(
+    config: ServerConfig | None = None,
+    *,
+    systemd: Systemd | None = None,
+) -> FastMCP:
     config = config or ServerConfig()
+    systemd = systemd or MockSystemd()
 
     mcp = FastMCP("mcp-systemd")
-    register_resources(mcp)
+    register_resources(mcp, systemd)
     register_tools(
         mcp,
+        systemd,
         exposure=config.tools,
     )
     return mcp
