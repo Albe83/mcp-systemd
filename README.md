@@ -2,7 +2,7 @@
 
 Experimental semantic MCP interface for systemd.
 
-The MCP server is the real implementation. During interface development it is wired to an in-memory simulated systemd backend instead of the host's real systemd manager.
+The MCP server is the real implementation. The systemd backend is selected from configuration: an in-memory simulated backend (default) or the host's real system manager over D-Bus.
 
 ## Architecture
 
@@ -20,7 +20,7 @@ MCP Resources / Tools
 
 The domain model and `Systemd` port live under `src/mcp_systemd/domain/`. Concrete adapters live under `src/mcp_systemd/backends/`.
 
-The default development composition uses `MockSystemd`. Resources and Tools depend only on the domain port, so a future production backend can replace the mock without changing the MCP interface.
+The default composition uses `MockSystemd`. Setting `backend.type: dbus` composes `DbusSystemd` against the local system manager instead. Resources and Tools depend only on the domain port, so the backend can be replaced without changing the MCP interface.
 
 MCP URIs and payload serialization remain outside the domain model.
 
@@ -149,15 +149,42 @@ The server uses FastMCP HTTP transport.
 
 By default it listens only on `127.0.0.1:48000`.
 
-## Configuration
+## Backends
 
-The default configuration path is:
+The server can run against two backends, selected from configuration:
 
-```text
-/etc/mcp-systemd/config.yaml
+- `mock` (default): the in-memory simulated backend used for development, tests, and semantic evaluation;
+- `dbus`: the real system manager over D-Bus, read-only.
+
+```yaml
+backend:
+  type: mock
 ```
 
-If the file does not exist, the defaults are used.
+```yaml
+backend:
+  type: dbus
+```
+
+Backend selection is composition only. Building the server does not connect to D-Bus: the connection is lazy and happens on the first operation. Failures surface on that first operation and are never replaced by an automatic fallback to the mock.
+
+With `dbus`, only system services and timers are supported:
+
+- discovery (`list_units`) and fresh runtime-state reads (`read_unit`) work;
+- unit definitions (`read_unit_definition`) and user managers are not implemented and fail explicitly;
+- `list_unit_types` lists the supported domain unit types, not a backend capability matrix.
+
+Capabilities are not inferred from the selected backend: tool exposure remains controlled by `tools.groups`, `tools.enable`, and `tools.disable`. The example below disables `read_unit_definition` for a D-Bus trial. Disabling the tool hides that tool only; the definition and user Resource templates still exist, and unsupported reads fail.
+
+## Configuration
+
+The default configuration path is `/etc/mcp-systemd/config.yaml`.
+
+When no `--config` is given, the default path is used if it exists; if it is absent, built-in defaults are used (`mock` backend, `127.0.0.1:48000`).
+
+An explicit path is required to exist: `uv run mcp-systemd --config ./config.yaml` exits nonzero if the file is missing or invalid, before any server is started.
+
+Configuration is read once at startup; restart the server after changing it.
 
 Example:
 
@@ -166,15 +193,20 @@ server:
   host: 127.0.0.1
   port: 48000
 
+backend:
+  type: dbus
+
 tools:
-  groups:
-    resource_api_fallback: true
-  enable: []
-  disable: []
+  disable:
+    - read_unit_definition
 ```
 
-A different configuration file can be selected explicitly:
+`backend` is optional. A missing `backend` section, or `backend: {}`, selects `mock`. Only `type` is allowed inside `backend`; unknown keys inside `backend`, unknown root keys, and unsupported backend types are rejected. Supported values are the exact, case-sensitive strings `mock` and `dbus`.
+
+Launch with a configuration file:
 
 ```bash
 uv run mcp-systemd --config ./config.yaml
 ```
+
+On startup the CLI prints the selected backend to stderr, for example `backend=dbus (local system manager)`. This announces the selection; it does not mean a D-Bus connection has been established.
