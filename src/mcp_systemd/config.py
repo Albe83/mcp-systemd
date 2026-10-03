@@ -10,6 +10,19 @@ DEFAULT_TOOL_GROUPS = {
     "resource_api_fallback": True,
 }
 
+SUPPORTED_BACKEND_TYPES = ("mock", "dbus")
+
+_ROOT_KEYS = {"server", "tools", "backend"}
+
+
+@dataclass(frozen=True)
+class BackendConfig:
+    type: str = "mock"
+
+    def __post_init__(self) -> None:
+        if self.type not in SUPPORTED_BACKEND_TYPES:
+            raise ValueError(f"Unsupported backend type: {self.type!r}")
+
 
 @dataclass(frozen=True)
 class ToolExposureConfig:
@@ -46,6 +59,7 @@ class ServerConfig:
     host: str = "127.0.0.1"
     port: int = 48000
     tools: ToolExposureConfig = field(default_factory=ToolExposureConfig)
+    backend: BackendConfig = field(default_factory=BackendConfig)
 
 
 def _parse_tool_names(value: object, field_name: str) -> frozenset[str]:
@@ -99,18 +113,50 @@ def _parse_tool_exposure(tools: dict) -> ToolExposureConfig:
     )
 
 
-def load_config(path: Path) -> ServerConfig:
-    if not path.exists():
+def _parse_backend_config(backend: object) -> BackendConfig:
+    if not isinstance(backend, dict):
+        raise ValueError("backend must be a mapping")
+
+    unknown_keys = set(backend) - {"type"}
+    if unknown_keys:
+        names = ", ".join(sorted(repr(key) for key in unknown_keys))
+        raise ValueError(f"Unknown backend configuration: {names}")
+
+    if "type" not in backend:
+        return BackendConfig()
+
+    return BackendConfig(type=backend["type"])
+
+
+def _reject_unknown_root_keys(data: dict) -> None:
+    unknown_keys = set(data) - _ROOT_KEYS
+    if unknown_keys:
+        names = ", ".join(sorted(repr(key) for key in unknown_keys))
+        raise ValueError(f"Unknown configuration keys: {names}")
+
+
+def load_config(path: Path, *, required: bool = False) -> ServerConfig:
+    try:
+        file = path.open("r", encoding="utf-8")
+    except FileNotFoundError:
+        if required:
+            raise
         return ServerConfig()
 
-    with path.open("r", encoding="utf-8") as file:
-        data = yaml.safe_load(file) or {}
+    with file:
+        data = yaml.safe_load(file)
+
+    if data is None:
+        return ServerConfig()
 
     if not isinstance(data, dict):
         raise ValueError("configuration root must be a mapping")
 
+    _reject_unknown_root_keys(data)
+
     server = data.get("server", {})
     tools = data.get("tools", {})
+    backend = data.get("backend", {})
 
     if not isinstance(server, dict):
         raise ValueError("server must be a mapping")
@@ -135,4 +181,5 @@ def load_config(path: Path) -> ServerConfig:
         host=host,
         port=port,
         tools=_parse_tool_exposure(tools),
+        backend=_parse_backend_config(backend),
     )
