@@ -7,33 +7,21 @@ from mcp_systemd.domain.unit_timer import TimerUnit
 
 MOCK_UNITS = (
     ServiceUnit(
-        ref=UnitRef(
-            scope="system",
-            type="service",
-            name="sshd",
-        ),
+        ref=UnitRef(scope="system", type="service", name="sshd"),
         description="OpenSSH server daemon",
         load_state="loaded",
         active_state="active",
         sub_state="running",
     ),
     ServiceUnit(
-        ref=UnitRef(
-            scope="system",
-            type="service",
-            name="systemd-journald",
-        ),
+        ref=UnitRef(scope="system", type="service", name="systemd-journald"),
         description="Journal Service",
         load_state="loaded",
         active_state="active",
         sub_state="running",
     ),
     TimerUnit(
-        ref=UnitRef(
-            scope="system",
-            type="timer",
-            name="systemd-tmpfiles-clean",
-        ),
+        ref=UnitRef(scope="system", type="timer", name="systemd-tmpfiles-clean"),
         description="Daily Cleanup of Temporary Directories",
         load_state="loaded",
         active_state="active",
@@ -54,11 +42,7 @@ MOCK_UNITS = (
 )
 
 MOCK_DEFINITIONS = {
-    UnitRef(
-        scope="system",
-        type="service",
-        name="sshd",
-    ): """[Unit]
+    UnitRef(scope="system", type="service", name="sshd"): """[Unit]
 Description=OpenSSH server daemon
 
 [Service]
@@ -104,9 +88,12 @@ class MockSystemd(Systemd):
     def __init__(
         self,
         *,
-        units: Iterable[Unit] = MOCK_UNITS,
-        definitions: Mapping[UnitRef, str] = MOCK_DEFINITIONS,
+        units: Iterable[Unit] | None = None,
+        definitions: Mapping[UnitRef, str] | None = None,
     ) -> None:
+        units = MOCK_UNITS if units is None else tuple(units)
+        definitions = MOCK_DEFINITIONS if definitions is None else definitions
+
         self._units = {unit.ref: unit for unit in units}
         self._definitions = dict(definitions)
 
@@ -132,14 +119,19 @@ class MockSystemd(Systemd):
         )
 
     async def get_unit(self, ref: UnitRef) -> Unit:
+        validate_unit_query(
+            unit_type=ref.type,
+            scope=ref.scope,
+            user=ref.user,
+        )
+
         try:
             return self._units[ref]
         except KeyError as error:
             raise ValueError("Unit not found") from error
 
     async def get_unit_definition(self, ref: UnitRef) -> str:
-        if ref not in self._units:
-            raise ValueError("Unit not found")
+        await self.get_unit(ref)
 
         try:
             return self._definitions[ref]
