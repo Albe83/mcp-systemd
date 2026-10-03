@@ -2,7 +2,27 @@
 
 Experimental semantic MCP interface for systemd.
 
-This first version is intentionally a **mock**: it exposes systemd unit resources but does not talk to systemd or perform any action.
+The MCP server is the real implementation. During interface development it is wired to an in-memory simulated systemd backend instead of the host's real systemd manager.
+
+## Architecture
+
+The server uses a small hexagonal boundary:
+
+```text
+MCP Resources / Tools
+        |
+        v
+   domain.Systemd
+        |
+        v
+    backend adapter
+```
+
+The domain model and `Systemd` port live under `src/mcp_systemd/domain/`. Concrete adapters live under `src/mcp_systemd/backends/`.
+
+The default development composition uses `MockSystemd`. Resources and Tools depend only on the domain port, so a future production backend can replace the mock without changing the MCP interface.
+
+MCP URIs and payload serialization remain outside the domain model.
 
 ## Resource templates
 
