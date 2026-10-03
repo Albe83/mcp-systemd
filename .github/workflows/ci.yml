@@ -29,8 +29,11 @@ jobs:
       - name: Sync locked environment
         run: uv sync --locked
 
-      - name: Run functional tests
-        run: uv run python -m unittest discover -s tests
+      - name: Run unit tests
+        run: uv run python -m unittest discover -s tests/unit
+
+      - name: Run integration tests
+        run: uv run python -m unittest discover -s tests/integration
 
       - name: Validate semantic eval corpus
         run: uv run python evals/validate.py
