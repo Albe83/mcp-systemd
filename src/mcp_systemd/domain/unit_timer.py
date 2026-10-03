@@ -13,3 +13,7 @@ TIMER_UNIT_TYPE = UnitType(
 @dataclass(frozen=True)
 class TimerUnit(Unit):
     """A systemd timer unit."""
+
+    def __post_init__(self) -> None:
+        if self.ref.type != TIMER_UNIT_TYPE.name:
+            raise ValueError("TimerUnit requires a timer UnitRef")
