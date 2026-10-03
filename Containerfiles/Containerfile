@@ -1,0 +1,44 @@
+# syntax=docker/dockerfile:1
+
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS builder
+
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy
+
+WORKDIR /app
+
+# Install dependencies first so they stay cached independently of the source.
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --locked --no-install-project --no-dev --no-editable
+
+COPY pyproject.toml uv.lock ./
+COPY src ./src
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-dev --no-editable
+
+
+FROM python:3.13-slim-bookworm AS runtime
+
+ENV PATH="/app/.venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1
+
+RUN useradd --create-home --uid 1000 app
+
+WORKDIR /app
+
+COPY --from=builder /app/.venv /app/.venv
+
+# Security by default: the baked-in config keeps the server on loopback.
+# To reach it from the host, run with --network host or mount a config that
+# binds 0.0.0.0 at runtime:
+#   -v ./config.yaml:/etc/mcp-systemd/config.yaml:ro
+COPY Containerfiles/files/etc/mcp-systemd/config.yaml /etc/mcp-systemd/config.yaml
+
+USER app
+
+EXPOSE 48000
+
+CMD ["mcp-systemd"]
