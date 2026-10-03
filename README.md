@@ -136,6 +136,21 @@ See `tests/README.md` for the TDD workflow and test-layer definitions.
 
 A manual-only GitHub Actions workflow named `CI` runs the locked install, functional tests, and semantic-eval validation in a clean environment. It is not triggered by pushes or pull requests.
 
+## Developer diagnostics
+
+`scripts/inspect_unit_properties.py` is a read-only diagnostic that dumps the native systemd D-Bus properties of one loaded unit. It is exploratory output used to study the native surface before choosing a configuration schema; it is not the future MCP configuration response.
+
+```bash
+uv run python scripts/inspect_unit_properties.py sshd.service
+uv run python scripts/inspect_unit_properties.py logrotate.timer
+```
+
+- Accepts one complete unit name (`.service` or `.timer`); the name is preserved verbatim.
+- Always uses the local system bus. No YAML selection, mock backend, HTTP server, or user manager.
+- Resolves already-loaded units with `GetUnit`, so installed-but-unloaded units may be unavailable.
+- Prints one indented JSON document to stdout: `requested_unit`, `object_path`, and every property of every discovered `org.freedesktop.systemd1.*` interface, each as `{"signature", "value"}`.
+- Errors go to stderr with a nonzero exit status and no partial JSON.
+
 ## Run
 
 ```bash
