@@ -178,5 +178,3 @@ A different configuration file can be selected explicitly:
 ```bash
 uv run mcp-systemd --config ./config.yaml
 ```
-
-See `config.example.yaml` for the current configuration surface.
