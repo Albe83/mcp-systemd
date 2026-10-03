@@ -14,3 +14,4 @@ CONTRIBUTING.md
 README.md
 LICENSE
 Containerfiles/build.sh
+Containerfiles/verify-python.sh

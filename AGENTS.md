@@ -15,11 +15,12 @@ MCP server exposing systemd units as MCP resources. The architecture is a small 
 - Integration tests: `uv run python -m unittest discover -s tests/integration`
 - Single test: `uv run python -m unittest tests.unit.test_mcp_unit.UnitUriTests.test_round_trip_system_unit`
 - Validate eval corpus: `uv run python evals/validate.py`
+- Python 3.10 checks (throwaway container, host-independent): `Containerfiles/verify-python.sh`
 
 There is **no** lint, typecheck, or formatter configured. Do not invent `ruff`/`mypy` commands; the checks above are the whole surface.
 
 ## Gotchas
-- `pyproject.toml` declares `requires-python >=3.10`, but CI uses Python 3.13. Changing deps requires `uv lock` and committing `uv.lock`.
+- `pyproject.toml` declares `requires-python >=3.10`, but CI uses Python 3.13. Changing deps requires `uv lock` and committing `uv.lock`. The declared minimum Python can be verified without a host interpreter via `Containerfiles/verify-python.sh` (throwaway container; keeps the repo read-only).
 - CI (`.github/workflows/ci.yml`) is `workflow_dispatch` only — it does **not** run on pushes or PRs. Run checks locally before claiming success.
 - Preserve the boundary: `domain/` must not import FastMCP, MCP types, URIs, or backend code; URI parsing/serialization belongs in `mcp_unit.py`. `systemd` is an injectable port, so tests compose a fake backend instead of mocking FastMCP.
 - The `Systemd` port and the resource/tool handlers are `async`; async tests subclass `unittest.IsolatedAsyncioTestCase`. Discovery stores only a `UnitRef` and reads call `get_unit(ref)` fresh, so state is not frozen at discovery time (ADR 0013) — do not cache `Unit` objects in the provider.
