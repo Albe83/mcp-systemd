@@ -87,12 +87,16 @@ class DbusSystemd(Systemd):
             return self._manager
 
         bus = await MessageBus(bus_type=BusType.SYSTEM).connect()
-        proxy = bus.get_proxy_object(
-            _SYSTEMD_BUS_NAME,
-            _SYSTEMD_MANAGER_PATH,
-            _SYSTEMD_MANAGER_INTROSPECTION,
-        )
-        manager = proxy.get_interface(_SYSTEMD_MANAGER_INTERFACE)
+        try:
+            proxy = bus.get_proxy_object(
+                _SYSTEMD_BUS_NAME,
+                _SYSTEMD_MANAGER_PATH,
+                _SYSTEMD_MANAGER_INTROSPECTION,
+            )
+            manager = proxy.get_interface(_SYSTEMD_MANAGER_INTERFACE)
+        except Exception:
+            await bus.disconnect()
+            raise
 
         self._bus = bus
         self._manager = manager
@@ -109,7 +113,7 @@ def _unit_from_list_units_row(
     sub_state = str(row[4])
 
     stem, separator, unit_type = name.rpartition(".")
-    if not separator or not stem:
+    if not separator or not stem or not unit_type:
         return None
 
     ref = UnitRef(
