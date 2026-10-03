@@ -1,0 +1,184 @@
+# Standalone declarative catalog; not server configuration.
+# Format and extension rules: ../docs/property-catalog.md
+version: 1
+
+interfaces:
+  org.freedesktop.systemd1.Unit:
+    Description:
+      name: description
+      unit_types: [service, timer]
+      group: metadata
+      kind: metadata
+      description: Human-readable description of the unit.
+      dbus_signature: s
+      schema:
+        type: string
+    Requires:
+      name: requires
+      unit_types: [service, timer]
+      group: dependencies
+      kind: relationship
+      description: Unit names that this unit requires, as resolved by the manager.
+      dbus_signature: as
+      schema:
+        type: array
+        items:
+          type: string
+    Wants:
+      name: wants
+      unit_types: [service, timer]
+      group: dependencies
+      kind: relationship
+      description: Unit names that this unit wants, as resolved by the manager.
+      dbus_signature: as
+      schema:
+        type: array
+        items:
+          type: string
+    After:
+      name: after
+      unit_types: [service, timer]
+      group: dependencies
+      kind: relationship
+      description: Unit names ordered before this unit when both are activated.
+      dbus_signature: as
+      schema:
+        type: array
+        items:
+          type: string
+
+  org.freedesktop.systemd1.Service:
+    Type:
+      name: type
+      unit_types: [service]
+      group: execution
+      kind: configuration
+      description: Service startup and supervision type.
+      dbus_signature: s
+      schema:
+        type: string
+    Restart:
+      name: restart
+      unit_types: [service]
+      group: restart
+      kind: configuration
+      description: Policy for automatically restarting the service.
+      dbus_signature: s
+      schema:
+        type: string
+    RestartUSec:
+      name: restart_delay_usec
+      unit_types: [service]
+      group: restart
+      kind: configuration
+      description: Restart delay reported by the manager, in microseconds.
+      dbus_signature: t
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 18446744073709551615
+    User:
+      name: user
+      unit_types: [service]
+      group: execution
+      kind: configuration
+      description: Configured execution user; an empty value leaves the user unspecified by this setting.
+      dbus_signature: s
+      schema:
+        type: string
+    Group:
+      name: group
+      unit_types: [service]
+      group: execution
+      kind: configuration
+      description: Configured execution group; an empty value leaves the group unspecified by this setting.
+      dbus_signature: s
+      schema:
+        type: string
+    WorkingDirectory:
+      name: working_directory
+      unit_types: [service]
+      group: execution
+      kind: configuration
+      description: Working directory setting reported by the manager; an empty value means it is unspecified by this setting.
+      dbus_signature: s
+      schema:
+        type: string
+    NoNewPrivileges:
+      name: no_new_privileges
+      unit_types: [service]
+      group: security
+      kind: configuration
+      description: Whether service processes are prevented from gaining new privileges through execve.
+      dbus_signature: b
+      schema:
+        type: boolean
+
+  org.freedesktop.systemd1.Timer:
+    Unit:
+      name: target_unit
+      unit_types: [timer]
+      group: scheduling
+      kind: configuration
+      description: Name of the unit activated by this timer.
+      dbus_signature: s
+      schema:
+        type: string
+    Persistent:
+      name: persistent
+      unit_types: [timer]
+      group: scheduling
+      kind: configuration
+      description: Whether missed calendar events are caught up when the timer becomes active.
+      dbus_signature: b
+      schema:
+        type: boolean
+    AccuracyUSec:
+      name: accuracy_usec
+      unit_types: [timer]
+      group: scheduling
+      kind: configuration
+      description: Timer scheduling accuracy window, in microseconds.
+      dbus_signature: t
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 18446744073709551615
+    RandomizedDelayUSec:
+      name: randomized_delay_usec
+      unit_types: [timer]
+      group: scheduling
+      kind: configuration
+      description: Maximum randomized delay added to timer events, in microseconds.
+      dbus_signature: t
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 18446744073709551615
+    WakeSystem:
+      name: wake_system
+      unit_types: [timer]
+      group: scheduling
+      kind: configuration
+      description: Whether timer events request resume from suspend when supported.
+      dbus_signature: b
+      schema:
+        type: boolean
+    OnClockChange:
+      name: on_clock_change
+      unit_types: [timer]
+      group: scheduling
+      kind: configuration
+      description: Whether the timer triggers on system-clock changes relative to the monotonic clock.
+      dbus_signature: b
+      schema:
+        type: boolean
+    OnTimezoneChange:
+      name: on_timezone_change
+      unit_types: [timer]
+      group: scheduling
+      kind: configuration
+      description: Whether the timer triggers when the local timezone changes.
+      dbus_signature: b
+      schema:
+        type: boolean
