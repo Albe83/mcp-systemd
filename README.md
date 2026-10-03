@@ -121,13 +121,18 @@ uv run python evals/validate.py
 
 See `evals/README.md` for the case format and execution protocol.
 
-## Functional checks
+## Tests
 
-Run the lightweight functional test suite with:
+Run the unit and integration suites separately:
 
 ```bash
-uv run python -m unittest discover -s tests
+uv run python -m unittest discover -s tests/unit
+uv run python -m unittest discover -s tests/integration
 ```
+
+Semantic model behavior remains covered separately under `evals/`.
+
+See `tests/README.md` for the TDD workflow and test-layer definitions.
 
 A manual-only GitHub Actions workflow named `CI` runs the locked install, functional tests, and semantic-eval validation in a clean environment. It is not triggered by pushes or pull requests.
 
