@@ -78,6 +78,8 @@ Unit and integration tests protect code-level contracts. Semantic evals remain a
 
 The GitHub Actions `CI` workflow runs the same checks in a clean environment, but it is intentionally **manual only**. It does not run on pushes or pull requests. Trigger it from **Actions → CI → Run workflow** when remote verification is useful.
 
+To run the same locked checks under the declared minimum Python (`>=3.10`) without installing that interpreter on the host, use `Containerfiles/verify-python.sh`. It runs a throwaway container and mounts the repository read-only.
+
 ## Commit messages
 
 Use a Conventional Commits style:
