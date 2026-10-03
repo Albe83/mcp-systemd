@@ -1,4 +1,4 @@
-# ADR 0001: Layer the MCP interface into resources, primitives, and intent workflows
+# ADR 0001: Layer the interface into resources, primitives, and intent workflows
 
 - **Status:** Accepted
 - **Date:** 2026-10-02
@@ -7,26 +7,27 @@
 
 The purpose of mcp-systemd is not to expose `systemctl` commands through MCP. The interface should represent systemd semantically and help a model operate on it at the appropriate level of abstraction.
 
-A model sometimes needs direct access to systemd objects and atomic operations, but common administrative activities are better expressed as intents that can be implemented as deterministic workflows.
+A model needs semantic representations of systemd objects and goal-oriented operations. Internally, deterministic workflows may require lower-level systemd primitives.
 
 ## Decision
 
-The MCP interface will be designed in three conceptual layers:
+The design uses three conceptual layers:
 
 1. **Resources**  
    Semantic representations of systemd objects and their state.
 
 2. **Primitive operations**  
-   Small, predictable operations acting on those resources. These are the low-level building blocks available to the model.
+   Small, predictable operations on the systemd domain. They are implementation building blocks and may be exposed through MCP only when doing so adds distinct model-facing value.
 
 3. **Intent/workflow operations**  
    Higher-level operations representing administrative goals or use cases. Their implementation may orchestrate multiple primitive operations and checks.
 
-The third layer is intentionally opinionated: when a well-defined workflow exists, it should provide the most direct path for the model to express the desired outcome instead of requiring the model to reconstruct the procedure itself.
+The intent layer is deliberately opinionated: when a deterministic workflow can express the user's desired outcome, the model should not be required to reconstruct that procedure from primitives.
 
 ## Consequences
 
 - The public interface is not derived mechanically from `systemctl`.
-- Primitive operations remain available for flexibility and composition.
+- Primitive operations can exist behind the application boundary without consuming model context.
+- A primitive can still become an MCP Tool when there is a real model-facing use case for it.
 - Reusable administrative knowledge can be encoded in deterministic workflows instead of relying entirely on model reasoning.
 - The interface can make complex tasks more accessible to smaller models by reducing the number of decisions they must make.
