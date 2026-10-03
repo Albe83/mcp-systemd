@@ -11,8 +11,9 @@ MCP server exposing systemd units as MCP resources. The architecture is a small 
 ## Commands (use `uv`; deps pinned in `uv.lock`)
 - Sync: `uv sync --locked`
 - Run server: `uv run mcp-systemd` (FastMCP HTTP transport; default `127.0.0.1:48000`; `--config <path>` overrides `/etc/mcp-systemd/config.yaml`)
-- All tests: `uv run python -m unittest discover -s tests`
-- Single test: `uv run python -m unittest tests.test_mcp_unit.UnitUriTests.test_round_trip_system_unit`
+- Unit tests: `uv run python -m unittest discover -s tests/unit`
+- Integration tests: `uv run python -m unittest discover -s tests/integration`
+- Single test: `uv run python -m unittest tests.unit.test_mcp_unit.UnitUriTests.test_round_trip_system_unit`
 - Validate eval corpus: `uv run python evals/validate.py`
 
 There is **no** lint, typecheck, or formatter configured. Do not invent `ruff`/`mypy` commands; the checks above are the whole surface.
@@ -31,4 +32,5 @@ There is **no** lint, typecheck, or formatter configured. Do not invent `ruff`/`
 ## Conventions
 - Conventional Commits, imperative, lowercase, no trailing period (`feat(scope): ...`). Branch prefixes: `feat/ fix/ docs/ refactor/ test/ chore/`.
 - Design decisions live in `docs/adr/` (see `docs/adr/README.md`). Interface changes should add/update an ADR rather than silently diverge.
-- `evals/` is a model-facing corpus and is only structurally validated; it is not a substitute for functional tests. New model-facing capabilities should add/update eval cases (`evals/cases/*.yaml`).
+- Tests are layered (see `tests/README.md`): `tests/unit/` for domain/config/serialization/one adapter, `tests/integration/` for FastMCP wiring and the assembled surface. Behavioral changes follow red-green-refactor: failing unit test first, then minimal code; add an integration test only when crossing a boundary.
+- `evals/` is a model-facing corpus and is only structurally validated; it is not a substitute for tests. New or changed model-facing contracts should add/update eval cases (`evals/cases/*.yaml`).
