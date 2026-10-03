@@ -148,7 +148,7 @@ tools:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "config.yaml"
             path.write_text(
-                "tools:\n  groups:\n    resource_api_fallback: yes\n",
+                "tools:\n  groups:\n    resource_api_fallback: \"true\"\n",
                 encoding="utf-8",
             )
 
