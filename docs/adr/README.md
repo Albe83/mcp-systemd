@@ -16,3 +16,4 @@ This directory contains the Architecture Decision Records (ADRs) for **mcp-syste
 | [0010](0010-unit-state-and-subresources.md) | Keep core unit state on the base resource and optional heavy views as sub-resources | Accepted |
 | [0011](0011-semantic-resource-api-fallback.md) | Provide semantic Resource API fallback tools | Accepted |
 | [0012](0012-tool-exposure-groups.md) | Configure tool exposure with groups and per-tool overrides | Accepted |
+| [0013](0013-hexagonal-systemd-boundary.md) | Separate the MCP interface from systemd backends with a hexagonal boundary | Accepted |
