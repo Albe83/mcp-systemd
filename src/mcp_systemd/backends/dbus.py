@@ -95,7 +95,7 @@ class DbusSystemd(Systemd):
             )
             manager = proxy.get_interface(_SYSTEMD_MANAGER_INTERFACE)
         except Exception:
-            await bus.disconnect()
+            bus.disconnect()
             raise
 
         self._bus = bus

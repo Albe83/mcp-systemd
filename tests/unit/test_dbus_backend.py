@@ -111,17 +111,27 @@ class FakeSystemdManager:
 
 
 class FakeProxy:
-    def __init__(self, manager) -> None:
+    def __init__(self, manager, *, interface_error=None) -> None:
         self._manager = manager
+        self._interface_error = interface_error
 
     def get_interface(self, name):
+        if self._interface_error is not None:
+            raise self._interface_error
         return self._manager
 
 
 class FakeBus:
-    def __init__(self, *, manager=None, proxy_error=None) -> None:
+    def __init__(
+        self,
+        *,
+        manager=None,
+        proxy_error=None,
+        interface_error=None,
+    ) -> None:
         self._manager = manager
         self._proxy_error = proxy_error
+        self._interface_error = interface_error
         self.disconnected = False
 
     async def connect(self):
@@ -130,9 +140,9 @@ class FakeBus:
     def get_proxy_object(self, *args, **kwargs):
         if self._proxy_error is not None:
             raise self._proxy_error
-        return FakeProxy(self._manager)
+        return FakeProxy(self._manager, interface_error=self._interface_error)
 
-    async def disconnect(self):
+    def disconnect(self):
         self.disconnected = True
 
 
@@ -247,20 +257,42 @@ class DbusSystemdTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(manager.calls, 2)
         self.assertEqual(first, second)
 
-    async def test_disconnects_bus_when_manager_setup_fails(self) -> None:
+    async def test_disconnects_bus_when_proxy_setup_fails(self) -> None:
+        error = RuntimeError("introspection failed")
         buses: list[FakeBus] = []
 
         def factory(**kwargs):
-            bus = FakeBus(proxy_error=RuntimeError("introspection failed"))
+            bus = FakeBus(proxy_error=error)
             buses.append(bus)
             return bus
 
         backend = DbusSystemd()
 
         with mock.patch.object(dbus_module, "MessageBus", factory):
-            with self.assertRaises(RuntimeError):
+            with self.assertRaises(RuntimeError) as raised:
                 await backend.list_units(scope="system")
 
+        self.assertIs(raised.exception, error)
+        self.assertTrue(buses[0].disconnected)
+        self.assertIsNone(backend._bus)
+        self.assertIsNone(backend._manager)
+
+    async def test_disconnects_bus_when_interface_setup_fails(self) -> None:
+        error = RuntimeError("interface missing")
+        buses: list[FakeBus] = []
+
+        def factory(**kwargs):
+            bus = FakeBus(interface_error=error)
+            buses.append(bus)
+            return bus
+
+        backend = DbusSystemd()
+
+        with mock.patch.object(dbus_module, "MessageBus", factory):
+            with self.assertRaises(RuntimeError) as raised:
+                await backend.list_units(scope="system")
+
+        self.assertIs(raised.exception, error)
         self.assertTrue(buses[0].disconnected)
         self.assertIsNone(backend._bus)
         self.assertIsNone(backend._manager)
