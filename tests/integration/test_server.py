@@ -1,7 +1,47 @@
 import unittest
+from unittest import mock
 
-from mcp_systemd.config import ServerConfig, ToolExposureConfig
+from mcp_systemd import server as server_module
+from mcp_systemd.backends import dbus as dbus_module
+from mcp_systemd.backends.dbus import DbusSystemd
+from mcp_systemd.backends.mock import MockSystemd
+from mcp_systemd.config import (
+    BackendConfig,
+    ServerConfig,
+    ToolExposureConfig,
+)
+from mcp_systemd.domain.unit import UnitRef
+from mcp_systemd.domain.unit_service import ServiceUnit
 from mcp_systemd.server import build_server
+
+SAMPLE_UNIT = ServiceUnit(
+    ref=UnitRef(scope="system", type="service", name="fake"),
+    description="Fake service",
+    load_state="loaded",
+    active_state="active",
+    sub_state="running",
+)
+
+
+class RecordingBackend:
+    def __init__(self, units=(SAMPLE_UNIT,)) -> None:
+        self.units = tuple(units)
+        self.list_calls = 0
+
+    async def list_units(self, *, unit_type=None, scope=None, user=None):
+        self.list_calls += 1
+        return self.units
+
+    async def get_unit(self, ref):
+        raise NotImplementedError
+
+    async def get_unit_definition(self, ref):
+        raise NotImplementedError
+
+
+class FalseyRecordingBackend(RecordingBackend):
+    def __bool__(self) -> bool:
+        return False
 
 
 class ServerSurfaceTests(unittest.IsolatedAsyncioTestCase):
@@ -99,6 +139,75 @@ class ServerSurfaceTests(unittest.IsolatedAsyncioTestCase):
             uris,
         )
         self.assertFalse(any(uri.endswith("/definition") for uri in uris))
+
+
+class BackendSelectionTests(unittest.IsolatedAsyncioTestCase):
+    def test_factory_selects_mock_without_connecting(self) -> None:
+        with mock.patch.object(
+            dbus_module,
+            "MessageBus",
+            side_effect=AssertionError("must not connect"),
+        ):
+            backend = server_module._build_backend(
+                BackendConfig(type="mock")
+            )
+
+        self.assertIsInstance(backend, MockSystemd)
+
+    def test_factory_selects_dbus_without_connecting(self) -> None:
+        with mock.patch.object(
+            dbus_module,
+            "MessageBus",
+            side_effect=AssertionError("must not connect"),
+        ):
+            backend = server_module._build_backend(
+                BackendConfig(type="dbus")
+            )
+
+        self.assertIsInstance(backend, DbusSystemd)
+
+    async def test_default_config_selects_mock(self) -> None:
+        mcp = build_server(ServerConfig())
+        uris = {str(resource.uri) for resource in await mcp.list_resources()}
+
+        self.assertIn("systemd://system/unit/service/sshd", uris)
+
+    async def test_injected_adapter_wins_over_configured_dbus(self) -> None:
+        injected = MockSystemd(units=(), definitions={})
+        mcp = build_server(
+            ServerConfig(backend=BackendConfig(type="dbus")),
+            systemd=injected,
+        )
+
+        self.assertEqual(await mcp.list_resources(), [])
+
+    async def test_falsey_injected_adapter_is_retained(self) -> None:
+        injected = FalseyRecordingBackend(units=())
+        mcp = build_server(
+            ServerConfig(backend=BackendConfig(type="dbus")),
+            systemd=injected,
+        )
+
+        self.assertEqual(await mcp.list_resources(), [])
+        self.assertEqual(injected.list_calls, 1)
+
+    async def test_selected_dbus_backend_serves_resources_and_tools(
+        self,
+    ) -> None:
+        backend = RecordingBackend()
+
+        with mock.patch.object(server_module, "DbusSystemd", lambda: backend):
+            mcp = build_server(
+                ServerConfig(backend=BackendConfig(type="dbus"))
+            )
+            resources = await mcp.list_resources()
+            await mcp.call_tool("list_units", {})
+
+        self.assertEqual(
+            [str(resource.uri) for resource in resources],
+            ["systemd://system/unit/service/fake"],
+        )
+        self.assertEqual(backend.list_calls, 2)
 
 
 if __name__ == "__main__":
