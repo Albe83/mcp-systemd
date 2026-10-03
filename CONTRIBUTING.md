@@ -49,17 +49,32 @@ When `pyproject.toml` dependencies change, regenerate and commit the lockfile:
 uv lock
 ```
 
+## Test-driven development
+
+Behavioral changes use a Red-Green-Refactor loop:
+
+1. write the smallest unit test that expresses the behavior and see it fail;
+2. implement the minimum change that makes it pass;
+3. refactor while keeping the suite green.
+
+Bug fixes should start with a reproducing test whenever practical.
+
+Use an integration test when the behavior crosses an architectural boundary. Use semantic evals when the model-facing MCP contract changes.
+
+See `tests/README.md` for the test layers.
+
 ## Checks
 
 Before opening or merging a pull request, run:
 
 ```bash
 uv sync --locked
-uv run python -m unittest discover -s tests
+uv run python -m unittest discover -s tests/unit
+uv run python -m unittest discover -s tests/integration
 uv run python evals/validate.py
 ```
 
-Functional tests protect code-level contracts. Semantic evals remain a separate model-facing corpus and are not replaced by functional tests.
+Unit and integration tests protect code-level contracts. Semantic evals remain a separate model-facing corpus and are not replaced by code-level tests.
 
 The GitHub Actions `CI` workflow runs the same checks in a clean environment, but it is intentionally **manual only**. It does not run on pushes or pull requests. Trigger it from **Actions → CI → Run workflow** when remote verification is useful.
 
