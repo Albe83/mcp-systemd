@@ -35,8 +35,8 @@ Every descriptor requires these fields:
 | --- | --- |
 | `name` | Public lower_snake_case name; matches `^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$` |
 | `unit_types` | Non-empty list of unique supported unit types: `service`, `timer` |
-| `group` | Discovery category: `metadata`, `dependencies`, `execution`, `restart`, `security`, `scheduling` |
-| `kind` | `metadata`, `relationship`, or `configuration` in this seed |
+| `group` | Discovery category: `metadata`, `execution`, `restart`, `security`, `scheduling` |
+| `kind` | `metadata` or `configuration` in this seed |
 | `description` | Short English explanation of the returned value |
 | `dbus_signature` | Native D-Bus signature; internal binding metadata |
 | `schema` | JSON Schema describing the exported value, using Draft 2020-12 vocabulary |
@@ -58,21 +58,21 @@ changes the catalog, not a Python mapping table.
 
 ## Initial coverage
 
-The 18 bindings provide 11 applicable properties for services and 11 for timers:
+The 14 bindings provide 8 applicable properties for services and 7 for timers:
 
 | Interface | Public names |
 | --- | --- |
-| `org.freedesktop.systemd1.Unit` | `description`, `requires`, `wants`, `after` |
+| `org.freedesktop.systemd1.Unit` | `description` |
 | `org.freedesktop.systemd1.Service` | `type`, `restart`, `restart_delay_usec`, `user`, `group`, `working_directory`, `no_new_privileges` |
-| `org.freedesktop.systemd1.Timer` | `target_unit`, `persistent`, `accuracy_usec`, `randomized_delay_usec`, `wake_system`, `on_clock_change`, `on_timezone_change` |
+| `org.freedesktop.systemd1.Timer` | `persistent`, `accuracy_usec`, `randomized_delay_usec`, `wake_system`, `on_clock_change`, `on_timezone_change` |
 
 Values are those interpreted by the manager, including applied overrides and
 defaults. This is an intentionally incomplete catalog, not a reconstruction of
 the unit file or the complete execution environment of a running process.
 
-`requires`, `wants` and `after` describe the manager's resolved relationships,
-which can include implicit or generated dependencies. `after` specifies
-ordering when both units are activated; it does not itself request activation.
+Relations to other units are excluded from this catalog, including dependencies,
+ordering and the timer's activated unit. Their representation will be designed
+separately; this increment does not prescribe that future interface.
 
 Empty user, group or working-directory settings are preserved. They do not
 assert that the running process has an empty identity or directory. In
@@ -87,18 +87,16 @@ decisions about compound values, runtime components and special-value semantics.
 
 ## Values and schemas
 
-This seed requires only generic scalar/array conversion:
+This seed requires only generic scalar conversion:
 
 | D-Bus signature | JSON Schema |
 | --- | --- |
 | `s` | `type: string` |
 | `b` | `type: boolean` |
-| `as` | `type: array`, with string `items` |
 | `t` | `type: integer`, range 0 through 18446744073709551615 |
 
-Empty strings/lists, false and zero remain values. There are no schema defaults
+Empty strings, false and zero remain values. There are no schema defaults
 or string enums; new systemd versions may add service types or restart policies.
-Dependency arrays may name any systemd unit type, not just services and timers.
 
 Durations retain their native microsecond units. Unsigned 64-bit values must
 remain exact; consumers need lossless integer handling beyond the JavaScript
