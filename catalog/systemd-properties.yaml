@@ -82,6 +82,15 @@ interfaces:
         type: boolean
 
   org.freedesktop.systemd1.Timer:
+    Unit:
+      name: target_unit
+      unit_types: [timer]
+      group: scheduling
+      kind: configuration
+      description: Name of the unit activated by the timer, including its unit-type suffix.
+      dbus_signature: s
+      schema:
+        type: string
     Persistent:
       name: persistent
       unit_types: [timer]

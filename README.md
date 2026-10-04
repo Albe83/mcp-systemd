@@ -113,7 +113,8 @@ A tool cannot appear in both `enable` and `disable`.
 
 The standalone [unit property catalog](docs/property-catalog.md) maps native
 D-Bus properties to public names, descriptions and JSON Schemas. The initial
-catalog contains 14 bindings for services and timers, excluding relations to other units. It is separate from server
+catalog contains 15 bindings for services and timers, including the timer's
+`target_unit` setting; dependencies and ordering relations are deferred. It is separate from server
 configuration and is not yet loaded or exposed by the MCP server.
 
 ## Semantic evaluations

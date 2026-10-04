@@ -58,21 +58,23 @@ changes the catalog, not a Python mapping table.
 
 ## Initial coverage
 
-The 14 bindings provide 8 applicable properties for services and 7 for timers:
+The 15 bindings provide 8 applicable properties for services and 8 for timers:
 
 | Interface | Public names |
 | --- | --- |
 | `org.freedesktop.systemd1.Unit` | `description` |
 | `org.freedesktop.systemd1.Service` | `type`, `restart`, `restart_delay_usec`, `user`, `group`, `working_directory`, `no_new_privileges` |
-| `org.freedesktop.systemd1.Timer` | `persistent`, `accuracy_usec`, `randomized_delay_usec`, `wake_system`, `on_clock_change`, `on_timezone_change` |
+| `org.freedesktop.systemd1.Timer` | `target_unit`, `persistent`, `accuracy_usec`, `randomized_delay_usec`, `wake_system`, `on_clock_change`, `on_timezone_change` |
 
 Values are those interpreted by the manager, including applied overrides and
 defaults. This is an intentionally incomplete catalog, not a reconstruction of
 the unit file or the complete execution environment of a running process.
 
-Relations to other units are excluded from this catalog, including dependencies,
-ordering and the timer's activated unit. Their representation will be designed
-separately; this increment does not prescribe that future interface.
+Dependencies and ordering relations to other units are excluded. Their
+representation will be designed separately; this increment does not prescribe
+that future interface. The timer's `target_unit` is included as an identifying
+setting specific to timers. It preserves the native unit name, including its
+suffix (for example `logrotate.service`), without converting it to a resource URI.
 
 Empty user, group or working-directory settings are preserved. They do not
 assert that the running process has an empty identity or directory. In
