@@ -109,6 +109,14 @@ tools:
 
 A tool cannot appear in both `enable` and `disable`.
 
+## Property catalog
+
+The standalone [unit property catalog](docs/property-catalog.md) maps native
+D-Bus properties to public names, descriptions and JSON Schemas. The initial
+catalog contains 15 bindings for services and timers, including the timer's
+`target_unit` setting; dependencies and ordering relations are deferred. It is separate from server
+configuration and is not yet loaded or exposed by the MCP server.
+
 ## Semantic evaluations
 
 The `evals/` directory contains repeatable model-facing evaluation cases for discovery, state inspection, unit definitions, unsupported capabilities, and token-efficient behavior.
